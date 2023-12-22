@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const dotenv = require('dotenv'); // Add dotenv for environment variables
-
+const router = express.Router();
 dotenv.config(); // Load environment variables from .env file
 
 const app = express();
@@ -56,6 +56,28 @@ const users = [
   { username: 'khairul', password: '4102BQD' }, // Use hashed passwords
   { username: 'admin123', password: '19972000' },
 ];
+router.post('/register', async (req, res) => {
+  // Extract user data from the request body
+  const { username, password } = req.body;
+
+  try {
+    // Save the user data to MongoDB (Assuming you have a User model)
+    const newUser = await register({ newusername, newpassword });
+
+    // Redirect to the login page after successful registration
+    res.redirect('/login');
+  } catch (error) {
+    // Handle errors, e.g., duplicate username
+    console.error(error);
+    res.render('register', { error: 'Registration failed. Please try again.' });
+  }
+});
+
+router.get('/register', (req, res) => {
+  res.render('register'); // Create a new EJS file for registration form
+});
+
+module.exports = router;
 
 app.get('/', (req, res) => {
   res.render('login');
