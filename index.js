@@ -158,7 +158,6 @@ app.post('/register', async (req, res) => {
 });
 
 
-
 app.post('/addvisitors', async (req, res) => {
     let data = req.body;
     let id = data.id;
