@@ -56,28 +56,6 @@ const users = [
   { username: 'khairul', password: '4102BQD' }, // Use hashed passwords
   { username: 'admin123', password: '19972000' },
 ];
-router.post('/register', async (req, res) => {
-  // Extract user data from the request body
-  const { username, password } = req.body;
-
-  try {
-    // Save the user data to MongoDB (Assuming you have a User model)
-    const newUser = await register({ newusername, newpassword });
-
-    // Redirect to the login page after successful registration
-    res.redirect('/login');
-  } catch (error) {
-    // Handle errors, e.g., duplicate username
-    console.error(error);
-    res.render('register', { error: 'Registration failed. Please try again.' });
-  }
-});
-
-router.get('/register', (req, res) => {
-  res.render('register'); // Create a new EJS file for registration form
-});
-
-module.exports = router;
 
 app.get('/', (req, res) => {
   res.render('login');
@@ -96,6 +74,29 @@ app.post('/login', (req, res) => {
   }
 
 });
+router.post('/register', async (req, res) => {
+  // Extract user data from the request body
+  const { username, password } = req.body;
+
+  try {
+    // Save the user data to MongoDB (Assuming you have a User model)
+    const newUser = await register({ username, password });
+
+    // Redirect to the login page after successful registration
+    res.redirect('/login');
+  } catch (error) {
+    // Handle errors, e.g., duplicate username
+    console.error(error);
+    res.render('register', { error: 'Registration failed. Please try again.' });
+  }
+});
+
+router.get('/register', (req, res) => {
+  res.render('register'); // Create a new EJS file for the registration form
+});
+
+module.exports = router;
+
 
 let dbUsers = [
   {
@@ -148,63 +149,57 @@ client.connect().then(() => {
 
 app.post('/register', async (req, res) => {
   try {
-    const data = req.body;
-    const username = data.username;
-    
-    // Check if the username already exists
-    const match = dbUsers.find(element => element.username === username);
-    
+    const { username, password, name, email, role } = req.body;
+
+    // Check if the username already exists in MongoDB
+    const match = await dbUsers.findOne({ username });
+
     if (match) {
-      res.send("Error! User already registered.");
-    } else {
-      // Assuming the register function adds the user to the dbUsers array
-      const result = await register(
-        data.username,
-        data.password,
-        data.name,
-        data.email,
-        data.role
-      );
-
-      if (result.status === 'Registration successful!') {
-        // Assuming the updateUsersCollection function updates the MongoDB collection
-        await updateUsersCollection();
-      }
-
-      res.send(result);
+      return res.status(400).send("Error! User already registered.");
     }
+
+    // Assuming the register function adds the user to the users collection in MongoDB
+    const result = await dbUsers.insertOne({ username, password, name, email, role });
+
+    res.send({ status: 'Registration successful!', insertedId: result.insertedId });
   } catch (error) {
     console.error('Error in registration:', error);
     res.status(500).send('Internal Server Error');
   }
 });
 
-
+// Add visitors endpoint
 app.post('/addvisitors', async (req, res) => {
-    let data = req.body;
-    let id = data.id;
-    let match = dbVisitors.find(element => element.idnumber === id);
+  try {
+    const { id, visitorname, phoneNumber, email, appointmentDate, carPlate, purpose, destination, registeredBy } = req.body;
+
+    // Check if the visitor ID already exists in MongoDB
+    const match = await dbVisitors.findOne({ idnumber: id });
+
     if (match) {
-    res.send("Error! Visitor data already in the system.");
-    } else 
-    {
-      let result = await addvisitor(
-        data.visitorname,
-        data.id, 
-        data.phoneNumber,
-        data.email,
-        data.appointmentDate,
-        data.carPlate,
-        data.purpose,
-        data.destination,
-        data.registeredBy
-      );
-      if (result === 'Visitor registration successful!') {
-        await updateVisitorsCollection(); // Update the visitors collection in MongoDB
-      }
-      res.send(result);
+      return res.status(400).send("Error! Visitor data already in the system.");
     }
+
+    // Assuming the addvisitor function adds the visitor to the visitors collection in MongoDB
+    const result = await dbVisitors.insertOne({
+      idnumber: id,
+      visitorname,
+      phoneNumber,
+      email,
+      appointmentDate,
+      carPlate,
+      purpose,
+      destination,
+      registeredBy,
+    });
+
+    res.send({ status: 'Visitor registration successful!', insertedId: result.insertedId });
+  } catch (error) {
+    console.error('Error in adding visitors:', error);
+    res.status(500).send('Internal Server Error');
+  }
 });
+
 
 app.get('/visitorinfo', verifyToken, async (req, res) => {
   try {
@@ -264,18 +259,18 @@ app.get('/allusers', verifyToken, async (req, res) => {
 
 
 
-function login(loginuser, loginpassword) {
-  console.log("Someone is logging in!", loginuser, loginpassword); // Display mesage
-  const user = dbUsers.find(user => user.username === loginuser && user.password === loginpassword);
-  if (user) {
-    return user;
-  } else {
-    return { error: "User not found" };
-  }
-}
+// function login(loginuser, loginpassword) {
+//   console.log("Someone is logging in!", loginuser, loginpassword); // Display mesage
+//   const user = dbUsers.find(user => user.username === loginuser && user.password === loginpassword);
+//   if (user) {
+//     return user;
+//   } else {
+//     return { error: "User not found" };
+//   }
+// }
 
 
-function register(newusername, newpassword, newname, newemail,newrole) {
+function register(newusername, newpassword, newname, newemail) {
   let match = dbUsers.find(element => element.username === newusername);
   if (match) {
     return "Error! Username is already taken.";
@@ -285,7 +280,6 @@ function register(newusername, newpassword, newname, newemail,newrole) {
       password: newpassword,
       name: newname,
       email: newemail,
-      role: newrole
     };
     dbUsers.push(newUser);
     return {
