@@ -4,7 +4,6 @@ const ejs = require('ejs');
 const dotenv = require('dotenv'); // Add dotenv for environment variables
 const router = express.Router();
 dotenv.config(); // Load environment variables from .env file
-
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -40,7 +39,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: 'https://schoolvisitor3433.azurewebsites.net', // Update with your Azure Web App URL
+        url:'https://schoolvisitor3433.azurewebsites.net', // Update with your Azure Web App URL
         description: 'Visitor Management',
       },
     ],
@@ -53,7 +52,7 @@ const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use('/Group10-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 const users = [
-  { username: 'khairul', password: '4102BQD' }, // Use hashed passwords
+  { username: 'khairul', password: '4102BQD' }, 
   { username: 'admin123', password: '19972000' },
 ];
 
@@ -74,30 +73,8 @@ app.post('/login', (req, res) => {
   }
 
 });
-router.post('/register', async (req, res) => {
-  // Extract user data from the request body
-  const { username, password } = req.body;
 
-  try {
-    // Save the user data to MongoDB (Assuming you have a User model)
-    const newUser = await register({ username, password });
-
-    // Redirect to the login page after successful registration
-    res.redirect('/login');
-  } catch (error) {
-    // Handle errors, e.g., duplicate username
-    console.error(error);
-    res.render('register', { error: 'Registration failed. Please try again.' });
-  }
-});
-
-router.get('/register', (req, res) => {
-  res.render('register'); // Create a new EJS file for the registration form
-});
-
-module.exports = router;
-
-
+app.use(express.json());
 let dbUsers = [
   {
     username: "aliff08",
@@ -126,80 +103,86 @@ let dbVisitors = [
     destination:"Fakulti Mekanikal",
     registeredBy: "Albino Rafael"
   },
-  // Add more visitors as needed
+
 ];
 
 client.connect().then(() => {
   console.log('Connected to MongoDB');
 
-// app.post('/login', (req, res) => {
-//   let data = req.body;
-//   let user = login(data.username, data.password);
+app.post('/logintoken', (req, res) => {
+  let data = req.body;
+  let user = login(data.username, data.password);
 
-//   if (user.role === 'admin') {
-//     res.send(generateToken(user, 'admin'));
-//   } else if (user.role === 'user') {
-//     res.send(generateToken(user, 'user'));
-//   } else if (user.role === 'security') {
-//     res.send(generateToken(user, 'security'));
-//   } else {
-//     res.send({ error: "User not found" });
-//   }
-// });
+  if (user.role === 'admin') {
+    res.send(generateToken(user, 'admin'));
+  } else if (user.role === 'user') {
+    res.send(generateToken(user, 'user'));
+  } else if (user.role === 'security') {
+    res.send(generateToken(user, 'security'));
+  } else {
+    res.send({ error: "User not found" });
+  }
+});
 
 app.post('/register', async (req, res) => {
   try {
-    const { username, password, name, email, role } = req.body;
-
-    // Check if the username already exists in MongoDB
-    const match = await dbUsers.findOne({ username });
-
+    const data = req.body;
+    const username = data.username;
+    
+    // Check if the username already exists
+    const match = dbUsers.find(element => element.username === username);
+    
     if (match) {
-      return res.status(400).send("Error! User already registered.");
+      res.send("Error! User already registered.");
+    } else {
+      // Assuming the register function adds the user to the dbUsers array
+      const result = await register(
+        data.username,
+        data.password,
+        data.name,
+        data.email,
+      );
+
+      if (result.status === 'Registration successful!') {
+        // Assuming the updateUsersCollection function updates the MongoDB collection
+        await updateUsersCollection();
+      }
+
+      res.send(result);
     }
-
-    // Assuming the register function adds the user to the users collection in MongoDB
-    const result = await dbUsers.insertOne({ username, password, name, email, role });
-
-    res.send({ status: 'Registration successful!', insertedId: result.insertedId });
   } catch (error) {
     console.error('Error in registration:', error);
     res.status(500).send('Internal Server Error');
   }
 });
 
-// Add visitors endpoint
+
+
 app.post('/addvisitors', async (req, res) => {
-  try {
-    const { id, visitorname, phoneNumber, email, appointmentDate, carPlate, purpose, destination, registeredBy } = req.body;
-
-    // Check if the visitor ID already exists in MongoDB
-    const match = await dbVisitors.findOne({ idnumber: id });
-
+    let data = req.body;
+    let id = data.id;
+    let match = dbVisitors.find(element => element.idnumber === id);
     if (match) {
-      return res.status(400).send("Error! Visitor data already in the system.");
+    res.send("Error! Visitor data already in the system.");
+    } else 
+    {
+      let result = await addvisitor(
+        data.visitorname,
+        data.id, 
+        data.phoneNumber,
+        data.email,
+        data.appointmentDate,
+        data.carPlate,
+        data.purpose,
+        data.destination,
+        data.registeredBy
+      );
+      if (result === 'Visitor registration successful!') {
+        await updateVisitorsCollection(); // Update the visitors collection in MongoDB
+      }
+      res.send(result);
     }
-
-    // Assuming the addvisitor function adds the visitor to the visitors collection in MongoDB
-    const result = await dbVisitors.insertOne({
-      idnumber: id,
-      visitorname,
-      phoneNumber,
-      email,
-      appointmentDate,
-      carPlate,
-      purpose,
-      destination,
-      registeredBy,
-    });
-
-    res.send({ status: 'Visitor registration successful!', insertedId: result.insertedId });
-  } catch (error) {
-    console.error('Error in adding visitors:', error);
-    res.status(500).send('Internal Server Error');
-  }
 });
-
 
 app.get('/visitorinfo', verifyToken, async (req, res) => {
   try {
@@ -259,15 +242,15 @@ app.get('/allusers', verifyToken, async (req, res) => {
 
 
 
-// function login(loginuser, loginpassword) {
-//   console.log("Someone is logging in!", loginuser, loginpassword); // Display mesage
-//   const user = dbUsers.find(user => user.username === loginuser && user.password === loginpassword);
-//   if (user) {
-//     return user;
-//   } else {
-//     return { error: "User not found" };
-//   }
-// }
+function login(loginuser, loginpassword) {
+  console.log("Someone is logging in!", loginuser, loginpassword); // Display mesage
+  const user = dbUsers.find(user => user.username === loginuser && user.password === loginpassword);
+  if (user) {
+    return user;
+  } else {
+    return { error: "User not found" };
+  }
+}
 
 
 function register(newusername, newpassword, newname, newemail) {
@@ -411,7 +394,7 @@ function verifyToken(req, res, next) {
 }
 
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`listening on 192.168.0.12 port ${port}`);
 });
 
 }).catch((error) => {
