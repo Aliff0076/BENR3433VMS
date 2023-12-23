@@ -21,13 +21,16 @@ const visitorsCollectionDB = "visitors";
 const { ObjectId } = require('mongodb');
 
 
-const client = new MongoClient(uri,{
-  serverApi:{
+const client = new MongoClient(uri, {
+  serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
-    deprecationErrors:true,
-  }
+    deprecationErrors: true,
+  },
 });
+
+client.connect().then(() => {
+  console.log('Connected to MongoDB');
 
 const swaggerOptions = {
   swaggerDefinition: {
@@ -39,7 +42,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url:'https://schoolvisitor3433.azurewebsites.net', // Update with your Azure Web App URL
+        url:'http://localhost:3000',//'https://schoolvisitor3433.azurewebsites.net', // Update with your Azure Web App URL
         description: 'Visitor Management',
       },
     ],
@@ -51,41 +54,54 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use('/Group10-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-const users = [
-  { username: 'khairul', password: '4102BQD' }, 
-  { username: 'admin123', password: '19972000' },
-];
+// const users = [
+//   { username: 'khairul', password: '4102BQD' }
+// ];
 
-app.get('/', (req, res) => {
-  res.render('login');
-});
+// app.get('/', (req, res) => {
+//   res.render('login');
+// });
 
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
+// app.post('/login', async (req, res) => {
+//   const { username, password } = req.body;
 
-  const user = users.find((user) => user.username === username && user.password === password);
+//   try {
+//     // Connect to the MongoDB database
+//     await client.connect();
+//     const db = client.db(dbName);
+    
+//     // Query the users collection in MongoDB
+//     const dbUser = await db.collection(usersCollectionDB).findOne({ username, password });
 
-  if (user) {
-    // Assuming /Group10-docs is the Swagger documentation route
-    res.redirect('/Group10-docs');
-  } else {
-    res.send('Invalid username or password.');
-  }
+//     // Check if the user is in the predefined users array
+//     const predefinedUser = users.find(user => user.username === username && user.password === password);
 
-});
+//     if (dbUser || predefinedUser) {
+//       res.redirect('/Group10-docs');
+//     } else {
+//       // Authentication failed
+//       res.send('Invalid username or password.');
+//     }
+//   } catch (error) {
+//     console.error('Error during login:', error);
+//     res.status(500).send('Internal Server Error');
+//   } finally {
+//     await client.close();
+//   }
+// });
 
 app.use(express.json());
 let dbUsers = [
   {
-    username: "aliff08",
+    username: "aliffkhairul",
     password: "0987654321",
     name: "aliffaizat",
     email: "alifjr763@gmail.com",
     role  : "user"
   },
   {
-    username: "admin",
-    password: "password",
+    username: "admin123",
+    password: "@schooladmin",
     email : "admin@example.com",
     role: "admin"
   }
@@ -106,22 +122,35 @@ let dbVisitors = [
 
 ];
 
-client.connect().then(() => {
-  console.log('Connected to MongoDB');
+app.post('/adminlogin', (req, res) => {
+  const data = req.body;
+  const user = userlogin(data.username, data.password);
 
-app.post('/logintoken', (req, res) => {
-  let data = req.body;
-  let user = login(data.username, data.password);
-
-  if (user.role === 'admin') {
-    res.send(generateToken(user, 'admin'));
-  } else if (user.role === 'user') {
-    res.send(generateToken(user, 'user'));
-  } else if (user.role === 'security') {
-    res.send(generateToken(user, 'security'));
+  if (user && data.username === 'admin123' && data.password === '@schooladmin') {
+    const token = generateToken(user, 'admin');
+    res.send({
+      Status: "Success",
+      admintoken: token,
+      Message: "You may close this tab now."
+    });
+  } else if (user) {
+    res.send({ error: "Unauthorized. Invalid credentials for admin access." });
   } else {
     res.send({ error: "User not found" });
   }
+});
+
+
+app.get('/Administrator', (req, res) => {
+  res.status(200).send('Login and Generate token at http://localhost:3000/adminlogin' );
+});
+
+app.get('/', (req, res) => {
+  res.redirect('/Group10-docs');
+});
+
+app.get('/adminlogin', (req, res) => {
+  res.render('login'); // Assuming you have a view engine set up for rendering
 });
 
 app.post('/register', async (req, res) => {
@@ -141,6 +170,7 @@ app.post('/register', async (req, res) => {
         data.password,
         data.name,
         data.email,
+        data.role
       );
 
       if (result.status === 'Registration successful!') {
@@ -155,8 +185,6 @@ app.post('/register', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
-
-
 
 app.post('/addvisitors', async (req, res) => {
     let data = req.body;
@@ -185,20 +213,29 @@ app.post('/addvisitors', async (req, res) => {
 });
 
 app.get('/visitorinfo', verifyToken, async (req, res) => {
+  let client;
+
   try {
     // Connect to the MongoDB server
+    client = new MongoClient(uri, {
+      serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+      },
+    });
     await client.connect();
 
     if (req.user.role === 'admin' || req.user.role === 'security') {
       const visitorsCursor = client
-        .db("benr2423")
+        .db("benr3433")
         .collection("visitors")
         .find();
       const visitors = await visitorsCursor.toArray();
       res.send(visitors);
     } else if (req.user.role === 'user') {
       const visitorsCursor = client
-        .db("benr2423")
+        .db("benr3433")
         .collection("visitors")
         .find({ registeredBy: req.user.userProfile.name });
       const visitors = await visitorsCursor.toArray();
@@ -211,19 +248,30 @@ app.get('/visitorinfo', verifyToken, async (req, res) => {
     res.status(500).send('Internal Server Error');
   } finally {
     // Close the MongoDB connection
-    await client.close();
+    if (client) {
+      await client.close();
+    }
   }
 });
 
 app.get('/allusers', verifyToken, async (req, res) => {
+  let client;
+
   try {
     // Connect to the MongoDB server
+    client = new MongoClient(uri, {
+      serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+      },
+    });
     await client.connect();
 
     // Check if the user is an admin
     if (req.user.role === 'admin') {
       const usersCursor = client
-        .db("benr2423")
+        .db("benr3433")
         .collection("users") // Change to the actual collection name for users
         .find();
       const users = await usersCursor.toArray();
@@ -236,13 +284,128 @@ app.get('/allusers', verifyToken, async (req, res) => {
     res.status(500).send('Internal Server Error');
   } finally {
     // Close the MongoDB connection
-    await client.close();
+    if (client) {
+      await client.close();
+    }
   }
 });
 
 
+app.patch('/editvisitor/:id', verifyToken, async (req, res) => {
+  const visitorId = req.params.id;
+  const updateData = req.body;
 
-function login(loginuser, loginpassword) {
+  try {
+    const visitorsCollection = client.db(dbName).collection(visitorsCollectionDB);
+
+    if (!visitorId) {
+      res.status(400).send('Invalid visitor ID');
+      return;
+    }
+
+    const result = await visitorsCollection.findOneAndUpdate(
+      { _id: new ObjectId(visitorId) },
+      { $set: updateData },
+      { returnOriginal: false }
+    );
+
+    if (!result.value) {
+      res.status(404).send('Visitor not found');
+    } else {
+      await updateVisitorsCollection(); // Update the visitors collection in MongoDB
+      res.send('Visitor info updated successfully');
+    }
+  } catch (error) {
+    console.error('Error updating visitor info:', error);
+    res.status(500).send('An error occurred while updating the visitor info');
+  }
+});
+
+app.delete('/deletevisitor/:id', verifyToken, async (req, res) => {
+  if (req.user.role === 'user') {
+    const visitorId = req.params.id;
+
+    try {
+      const visitorsCollection = client.db(dbName).collection(visitorsCollectionDB);
+      const result = await visitorsCollection.deleteOne({ _id: new ObjectId(visitorId) });
+
+      if (result.deletedCount === 0) {
+        res.status(404).send('Visitor not found');
+      } else {
+        await updateVisitorsCollection(); // Update the visitors collection in MongoDB
+        res.send('Visitor deleted successfully');
+      }
+    } catch (error) {
+      console.error('Error deleting visitor:', error);
+      res.status(500).send('An error occurred while deleting the visitor');
+    }
+  } else {
+    res.status(403).send('Unauthorized');
+  }
+});
+
+
+app.post('/checkin', verifyToken, async (req, res) => {
+  if (req.user.role !== 'security') {
+    return res.status(401).send('Unauthorized');
+  }
+
+  const { visitorpass, carplate } = req.body;
+  const visitor = dbVisitors.find(visitor => visitor.visitorpass === visitorpass);
+
+  if (!visitor) {
+    return res.status(404).send('Visitor not found');
+  }
+
+  const gmt8Time = moment().tz('GMT+8').format('YYYY-MM-DD HH:mm:ss');
+  visitor.checkinTime = gmt8Time;
+  visitor.carPlate = carplate;
+
+  // Insert or update the check-in data in the RecordTime collection
+  try {
+    await visitingtime(visitorpass, visitor.visitorname, visitor.checkinTime);
+    res.send(`Check-in recorded for visitor: ${visitor.visitorname}
+      Check-in time: ${visitor.checkinTime}
+      Car plate number: ${carplate}`);
+  } catch (error) {
+    console.error('Error inserting/updating RecordTime:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/checkout', verifyToken, async (req, res) => {
+  if (req.user.role !== 'security') {
+    return res.status(401).send('Unauthorized');
+  }
+
+  const { visitorpass } = req.body;
+  const visitor = dbVisitors.find(visitor => visitor.visitorpass === visitorpass);
+
+  if (!visitor) {
+    return res.status(404).send('Visitor not found');
+  }
+
+  if (!visitor.checkinTime) {
+    return res.send('Visitor has not checked in');
+  }
+
+  const gmt8Time = moment().tz('GMT+8').format('YYYY-MM-DD HH:mm:ss');
+  const checkinTime = moment(visitor.checkinTime, 'YYYY-MM-DD HH:mm:ss');
+  const checkoutTime = moment(gmt8Time, 'YYYY-MM-DD HH:mm:ss');
+  visitor.checkoutTime = gmt8Time;
+
+  // Update the check-out time in the RecordTime collection
+  try {
+    await visitingtime(visitorpass, visitor.visitorname, visitor.checkinTime, visitor.checkoutTime);
+    res.send(`Checkout recorded for visitor: ${visitor.visitorname}
+      Checkout time: ${visitor.checkoutTime}`);
+  } catch (error) {
+    console.error('Error inserting/updating RecordTime:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+function userlogin(loginuser, loginpassword) {
   console.log("Someone is logging in!", loginuser, loginpassword); // Display mesage
   const user = dbUsers.find(user => user.username === loginuser && user.password === loginpassword);
   if (user) {
@@ -253,7 +416,7 @@ function login(loginuser, loginpassword) {
 }
 
 
-function register(newusername, newpassword, newname, newemail) {
+function register(newusername, newpassword, newname, newemail,newrole) {
   let match = dbUsers.find(element => element.username === newusername);
   if (match) {
     return "Error! Username is already taken.";
@@ -263,6 +426,7 @@ function register(newusername, newpassword, newname, newemail) {
       password: newpassword,
       name: newname,
       email: newemail,
+      role: newrole
     };
     dbUsers.push(newUser);
     return {
@@ -370,12 +534,46 @@ async function updateVisitorsCollection() {
   }
 }
 
+async function visitingtime(visitorPass, visitorName, checkinTime, checkoutTime) {
+  try {
+    await client.connect();
+    const db = client.db(dbName);
+    const RecordCollectionDB = db.collection('RecordTime');
+    // Check if the visitor record already exists
+    const existingRecord = await RecordCollectionDB.findOne({ visitorpass: visitorPass });
+
+    if (existingRecord) {
+      // Update the existing record with the visitor name and checkout time
+      await RecordCollectionDB.updateOne(
+        { visitorpass: visitorPass },
+        { $set: { visitorName: visitorName, checkoutTime: checkoutTime } }
+      );
+      console.log('RecordTime updated successfully');
+    } else {
+      // Create a new document for the visitor
+      const document = {
+        visitorpass: visitorPass,
+        visitorName: visitorName,
+        checkinTime: checkinTime,
+        checkoutTime: checkoutTime
+      };
+      // Insert the document
+      await RecordCollectionDB.insertOne(document);
+      console.log('RecordTime inserted successfully');
+    }
+    // Close the connection
+    client.close();
+  } catch (error) {
+    console.error('Error inserting/updating RecordTime:', error);
+  }
+}
+
 function generateToken(userProfile, role) {
   const payload = {
     userProfile,
     role
   };
-  return jwt.sign(payload, 'access_token', 
+  return jwt.sign(payload, 'admin', 
   { expiresIn: 30 * 60 });
 }
 
@@ -383,7 +581,7 @@ function verifyToken(req, res, next) {
   let header = req.headers.authorization;
   let token = header.split(' ')[1];
 
-  jwt.verify(token, 'access_token', function (err, decoded) {
+  jwt.verify(token, 'admin', function (err, decoded) {
     if (err) {
       res.send("Invalid Token");
     } else {
@@ -392,6 +590,7 @@ function verifyToken(req, res, next) {
     }
   });
 }
+
 
 app.listen(port, () => {
   console.log(`listening on 192.168.0.12 port ${port}`);

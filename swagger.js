@@ -1,5 +1,5 @@
 /**
- * @openapi
+ * @swagger
  * components:
  *   securitySchemes:
  *     bearerAuth:
@@ -9,7 +9,7 @@
  */
 
  /** 
- * @openapi
+ * @swagger
  * paths:
  *   /register:
  *     post:
@@ -48,13 +48,13 @@
  */
 
 /**
- * @openapi
+ * @swagger
  * paths:
  *   /visitorinfo:
  *     get:
  *       summary: Get visitor information ( admin access)
  *       tags:
- *         - Admin Manangement
+ *         - Admin Management
  *       security:
  *         - bearerAuth: []
  *       responses:
@@ -87,13 +87,13 @@
  *                 error: "Internal Server Error"
  */
 /**
- * @openapi
+ * @swagger
  * paths:
  *   /allusers:
  *     get:
  *       summary: Get information about all users
  *       tags:
- *        - Admin Manangement
+ *        - Admin Management
  *       security:
  *         - bearerAuth: []
  *       responses:
@@ -119,13 +119,13 @@
  *                 error: Internal Server Error
  */
 /**
- * @openapi
+ * @swagger
  * paths:
  *   /addvisitors:
  *     post:
  *       summary: Add a new visitor 
  *       tags:
- *         - Visitor Management
+ *         - User Management
  *       requestBody:
  *         description: Visitor information for registration
  *         required: true
@@ -172,4 +172,18 @@
  *             application/json:
  *               example:
  *                 error: "Internal Server Error"
+ */
+/**
+ * @swagger
+ * /Administrator:
+ *   get:
+ *     summary: Open adminlogin page
+ *     tags:
+ *       - Admin Management
+ *     responses:
+ *       200:
+ *         description: Provide message
+ *         content:
+ *           text/plain:
+ *             example: Copy and navigate to this link http://localhost:3000/adminlogin
  */

@@ -1,0 +1,9 @@
+################################ ADMIN LOGIN
+
+POST http://localhost:3000/logintoken
+Content-Type: application/json
+
+{
+  "username": "admin123",
+  "password": "@schooladmin"
+}
