@@ -122,6 +122,21 @@ let dbVisitors = [
 
 ];
 
+app.post('/userlogin', (req, res) => {
+  const data = req.body;
+  const user = userlogin(data.username, data.password);
+
+  if (user) {
+    const token = generateToken(user, 'user');
+    res.send({
+      Status: "Success",
+      usertoken: token,
+    });
+  } else {
+    res.send({ error: "Unauthorized. Invalid credentials for user access." });
+  }
+});
+
 app.post('/adminlogin', (req, res) => {
   const data = req.body;
   const user = userlogin(data.username, data.password);
@@ -152,6 +167,7 @@ app.get('/', (req, res) => {
 app.get('/adminlogin', (req, res) => {
   res.render('login'); // Assuming you have a view engine set up for rendering
 });
+
 
 app.post('/register', async (req, res) => {
   try {
@@ -186,7 +202,8 @@ app.post('/register', async (req, res) => {
   }
 });
 
-app.post('/addvisitors', async (req, res) => {
+app.post('/addvisitors', verifyToken, async (req, res) => {
+  if (req.user.role === 'user') {
     let data = req.body;
     let id = data.id;
     let match = dbVisitors.find(element => element.idnumber === id);
@@ -197,6 +214,7 @@ app.post('/addvisitors', async (req, res) => {
       let result = await addvisitor(
         data.visitorname,
         data.id, 
+        data.visitorpass,
         data.phoneNumber,
         data.email,
         data.appointmentDate,
@@ -210,6 +228,9 @@ app.post('/addvisitors', async (req, res) => {
       }
       res.send(result);
     }
+  } else {
+    res.send("Unauthorized");
+  }
 });
 
 app.get('/visitorinfo', verifyToken, async (req, res) => {
@@ -234,13 +255,6 @@ app.get('/visitorinfo', verifyToken, async (req, res) => {
       const visitors = await visitorsCursor.toArray();
       res.send(visitors);
     } else if (req.user.role === 'user') {
-      const visitorsCursor = client
-        .db("benr3433")
-        .collection("visitors")
-        .find({ registeredBy: req.user.userProfile.name });
-      const visitors = await visitorsCursor.toArray();
-      res.send(visitors);
-    } else {
       res.status(401).send('Unauthorized');
     }
   } catch (error) {

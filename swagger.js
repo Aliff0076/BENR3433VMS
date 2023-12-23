@@ -49,6 +49,45 @@
 
 /**
  * @swagger
+ * /userlogin:
+ *   post:
+ *     summary: User login and token generation
+ *     tags:
+ *       - User Management
+ *     description: Logs in a user and generates an authentication token.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 description: User's username
+ *               password:
+ *                 type: string
+ *                 description: User's password
+ *     responses:
+ *       200:
+ *         description: Successful login
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 Status:
+ *                   type: string
+ *                   description: Status of the login operation (e.g., "Success")
+ *                 usertoken:
+ *                   type: string
+ *                   description: Authentication token for the user
+ *       401:
+ *         description: Unauthorized. Invalid credentials for user access.
+ */
+
+/**
+ * @swagger
  * paths:
  *   /visitorinfo:
  *     get:
@@ -126,6 +165,8 @@
  *       summary: Add a new visitor 
  *       tags:
  *         - User Management
+ *       security:
+ *         - bearerAuth: []
  *       requestBody:
  *         description: Visitor information for registration
  *         required: true
