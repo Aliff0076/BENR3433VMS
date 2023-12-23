@@ -185,5 +185,5 @@
  *         description: Provide message
  *         content:
  *           text/plain:
- *             example: Copy and navigate to this link http://localhost:3000/adminlogin
+ *             example: Copy and navigate to this link https://schoolvisitor3433.azurewebsites.net/adminlogin
  */

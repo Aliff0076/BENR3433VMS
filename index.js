@@ -142,7 +142,7 @@ app.post('/adminlogin', (req, res) => {
 
 
 app.get('/Administrator', (req, res) => {
-  res.status(200).send('Login and Generate token at http://localhost:3000/adminlogin' );
+  res.status(200).send('Login and Generate token at https://schoolvisitor3433.azurewebsites.net/adminlogin' );
 });
 
 app.get('/', (req, res) => {
