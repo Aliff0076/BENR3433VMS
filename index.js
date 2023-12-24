@@ -2,7 +2,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const dotenv = require('dotenv'); // Add dotenv for environment variables
-const router = express.Router();
 dotenv.config(); // Load environment variables from .env file
 const app = express();
 const port = process.env.PORT || 3000;
@@ -42,7 +41,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url:'https://schoolvisitor3433.azurewebsites.net', // Update with your Azure Web App URL  //'http://localhost:3000'
+        url:'http://localhost:3000',  //https://schoolvisitor3433.azurewebsites.net', // Update with your Azure Web App URL  //'http://localhost:3000'
         description: 'Visitor Management',
       },
     ],
@@ -499,6 +498,8 @@ async function addvisitor(name, id, phoneNumber, email, appointmentDate, carPlat
   }
 }
 
+const { ObjectId } = require('mongodb');
+
 async function updateUsersCollection() {
   try {
     const usersCollection = client.db(dbName).collection(usersCollectionDB);
@@ -513,7 +514,9 @@ async function updateUsersCollection() {
           { upsert: true }
         );
       } else {
-        user._id = new ObjectId(); // Generate a new ObjectId
+        if (!user._id) {
+          user._id = new ObjectId(); // Generate a new ObjectId only if it doesn't exist
+        }
         await usersCollection.insertOne(user);
       }
     }
@@ -523,6 +526,7 @@ async function updateUsersCollection() {
     console.error('Error updating users collection:', error);
   }
 }
+
 async function updateVisitorsCollection() {
   try {
     const visitorsCollection = client.db(dbName).collection(visitorsCollectionDB);
@@ -537,7 +541,9 @@ async function updateVisitorsCollection() {
           { upsert: true }
         );
       } else {
-        visitor._id = new ObjectId(); // Generate a new ObjectId
+        if (!visitor._id) {
+          visitor._id = new ObjectId(); // Generate a new ObjectId only if it doesn't exist
+        }
         await visitorsCollection.insertOne(visitor);
       }
     }
@@ -547,6 +553,7 @@ async function updateVisitorsCollection() {
     console.error('Error updating visitors collection:', error);
   }
 }
+
 
 async function visitingtime(visitorPass, visitorName, checkinTime, checkoutTime) {
   try {
