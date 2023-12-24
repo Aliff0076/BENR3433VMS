@@ -41,7 +41,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url:'http://localhost:3000',  //https://schoolvisitor3433.azurewebsites.net', // Update with your Azure Web App URL  //'http://localhost:3000'
+        url:'http://schoolvisitor3433.azurewebsites.net', // Update with your Azure Web App URL  //'http://localhost:3000'
         description: 'Visitor Management',
       },
     ],
