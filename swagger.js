@@ -8,6 +8,59 @@
  *       bearerFormat: JWT
  */
 
+/**
+ * @swagger
+ * /userlogin:
+ *   post:
+ *     summary: User login and token generation
+ *     tags:
+ *       - Authentication
+ *     description: Logs in a user and generates an authentication token.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 description: User's username
+ *               password:
+ *                 type: string
+ *                 description: User's password
+ *     responses:
+ *       200:
+ *         description: Successful login
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 Status:
+ *                   type: string
+ *                   description: Status of the login operation (e.g., "Success")
+ *                 usertoken:
+ *                   type: string
+ *                   description: Authentication token for the user
+ *       401:
+ *         description: Unauthorized. Invalid credentials for user access.
+ */
+/**
+ * @swagger
+ * /Administrator:
+ *   get:
+ *     summary: Open adminlogin page
+ *     tags:
+ *       - Authentication
+ *     responses:
+ *       200:
+ *         description: Provide message
+ *         content:
+ *           text/plain:
+ *             example: Copy and navigate to this link https://schoolvisitor3433.azurewebsites.net/adminlogin
+ */
+
  /** 
  * @swagger
  * paths:
@@ -47,44 +100,7 @@
  *                 error: "Unauthorized"
  */
 
-/**
- * @swagger
- * /userlogin:
- *   post:
- *     summary: User login and token generation
- *     tags:
- *       - Authentication
- *     description: Logs in a user and generates an authentication token.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *                 description: User's username
- *               password:
- *                 type: string
- *                 description: User's password
- *     responses:
- *       200:
- *         description: Successful login
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 Status:
- *                   type: string
- *                   description: Status of the login operation (e.g., "Success")
- *                 usertoken:
- *                   type: string
- *                   description: Authentication token for the user
- *       401:
- *         description: Unauthorized. Invalid credentials for user access.
- */
+
 
 /**
  * @swagger
@@ -213,18 +229,4 @@
  *             application/json:
  *               example:
  *                 error: "Internal Server Error"
- */
-/**
- * @swagger
- * /Administrator:
- *   get:
- *     summary: Open adminlogin page
- *     tags:
- *       - Authentication
- *     responses:
- *       200:
- *         description: Provide message
- *         content:
- *           text/plain:
- *             example: Copy and navigate to this link https://schoolvisitor3433.azurewebsites.net/adminlogin
  */
