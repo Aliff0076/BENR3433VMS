@@ -53,7 +53,7 @@
  *   post:
  *     summary: User login and token generation
  *     tags:
- *       - User Management
+ *       - Authentication
  *     description: Logs in a user and generates an authentication token.
  *     requestBody:
  *       required: true
@@ -220,7 +220,7 @@
  *   get:
  *     summary: Open adminlogin page
  *     tags:
- *       - Admin Management
+ *       - Authentication
  *     responses:
  *       200:
  *         description: Provide message

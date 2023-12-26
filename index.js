@@ -41,7 +41,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url:'http://schoolvisitor3433.azurewebsites.net', // Update with your Azure Web App URL  //'http://localhost:3000'
+        url:'https://schoolvisitor3433.azurewebsites.net', // Update with your Azure Web App URL  //'http://localhost:3000'
         description: 'Visitor Management',
       },
     ],
@@ -185,7 +185,6 @@ app.post('/register', async (req, res) => {
         data.password,
         data.name,
         data.email,
-        data.role
       );
 
       if (result.status === 'Registration successful!') {
