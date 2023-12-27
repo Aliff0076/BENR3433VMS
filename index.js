@@ -306,6 +306,9 @@ app.get('/visitorpass', async (req, res) => {
   try {
     const visitorId = req.query.id;
 
+    const db = client.db(dbName);
+    const visitorsCollection = db.collection(collectionName);
+
     const visitors = await visitorsCollection.find({ _id: ObjectId(visitorId) }).toArray();
 
     if (visitors.length === 0) {
