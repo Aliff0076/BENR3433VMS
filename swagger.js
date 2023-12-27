@@ -235,6 +235,8 @@
  * /visitorpass:
  *   get:
  *     summary: Retrieve visitors by ID
+ *       tags:
+ *         - User Management
  *     description: Retrieve visitors from the visitors collection by providing an ID.
  *     parameters:
  *       - in: query
