@@ -302,23 +302,46 @@ app.get('/allusers', verifyToken, async (req, res) => {
   }
 });
 
-app.get('/visitorpass', (req, res) => {
-  const id = req.query.id;
+app.get('/visitorpass', async (req, res) => {
+  let client;
 
-  visitorsCollection
-    .find({ id })
-    .toArray()
-    .then((visitors) => {
-      if (visitors.length === 0) {
-        res.send('No visitors found ');
-      } else {
-        res.send(visitors);
-      }
-    })
-    .catch((error) => {
-      console.error('Error retrieving visitors by contact:', error);
-      res.status(500).send('An error occurred while retrieving visitors by contact');
-    });
+  try {
+    // Connect to the MongoDB server
+    client = new MongoClient(uri, {
+      serverApi: {
+        version: '1',
+        strict: true,
+        deprecationErrors: true,
+      },
+    });
+    await client.connect();
+
+    // Extract visitor ID from query parameters
+    const visitorId = req.query.id;
+
+    if (!visitorId) {
+      return res.status(400).send('Visitor ID is required in the query parameters');
+    }
+
+    const visitor = await client
+      .db('benr3433')
+      .collection('visitors')
+      .findOne({ _id: ObjectId(visitorId) });
+
+    if (visitor) {
+      res.send(visitor); // Directly send the entire visitor pass object
+    } else {
+      res.status(404).send('Visitor not found');
+    }
+  } catch (error) {
+    console.error('Error retrieving visitor pass:', error);
+    res.status(500).send('Internal server error');
+  } finally {
+    // Close the MongoDB connection
+    if (client) {
+      await client.close();
+    }
+  }
 });
 
 
