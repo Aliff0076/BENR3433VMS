@@ -234,31 +234,33 @@
  * @swagger
  * /visitorpass:
  *   get:
- *     summary: Retrieve visitors by ID
- *     description: Retrieve visitors from the visitors collection by providing an ID.
+ *     summary: "Retrieve visitors by ID"
+ *     description: "Retrieve visitors from the visitors collection by providing an ID."
+ *     tags:
+ *         - User Management
  *     parameters:
  *       - in: query
  *         name: id
  *         required: true
- *         description: The ID to filter visitors by.
+ *         description: "The ID to filter visitors by."
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: Successful response with visitors data.
+ *         description: "Successful response with visitors data."
  *         content:
  *           application/json:
  *             example:
  *               - id: "1"
  *                 name: "John Doe"
- *                 // Add other visitor properties here
+ *                 # Add other visitor properties here
  *       404:
- *         description: No visitors found.
+ *         description: "No visitors found."
  *         content:
  *           text/plain:
  *             example: "No visitors found"
  *       500:
- *         description: Internal server error.
+ *         description: "Internal server error."
  *         content:
  *           text/plain:
  *             example: "An error occurred while retrieving visitors by contact"
