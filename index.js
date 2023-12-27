@@ -316,7 +316,7 @@ app.get('/visitorpass', async (req, res) => {
     });
     await client.connect();
 
-    const visitorName = req.query.visitorName;
+    const visitorName = req.query.visitorname;
 
     if (!visitorName) {
       return res.status(400).send('Visitor name is required in the query parameters');
@@ -325,7 +325,7 @@ app.get('/visitorpass', async (req, res) => {
     const visitor = await client
       .db('benr3433')
       .collection('visitors')
-      .findOne({ name: visitorName });
+      .findOne({ name: visitorname });
 
     if (visitor) {
       res.send(visitor);
