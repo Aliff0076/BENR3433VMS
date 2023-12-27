@@ -240,7 +240,7 @@
  *         - Visitors
  *     parameters:
  *       - in: query
- *         name: id
+ *         name: visitorname
  *         required: true
  *         description: "The ID to filter visitors by."
  *         schema:

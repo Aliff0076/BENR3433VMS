@@ -303,22 +303,43 @@ app.get('/allusers', verifyToken, async (req, res) => {
 });
 
 app.get('/visitorpass', async (req, res) => {
+  let client;
+
   try {
-    const visitorId = req.query.id;
+    // Connect to the MongoDB server
+    client = new MongoClient(uri, {
+      serverApi: {
+        version: '1',
+        strict: true,
+        deprecationErrors: true,
+      },
+    });
+    await client.connect();
 
-    const db = client.db(dbName);
-    const visitorsCollection = db.collection(collectionName);
+    const visitorName = req.query.visitorName;
 
-    const visitors = await visitorsCollection.find({ _id: ObjectId(visitorId) }).toArray();
+    if (!visitorName) {
+      return res.status(400).send('Visitor name is required in the query parameters');
+    }
 
-    if (visitors.length === 0) {
-      res.send('No visitors found with the given ID');
+    const visitor = await client
+      .db('benr3433')
+      .collection('visitors')
+      .findOne({ name: visitorName });
+
+    if (visitor) {
+      res.send(visitor);
     } else {
-      res.send(visitors);
+      res.status(404).send('Visitor not found');
     }
   } catch (error) {
-    console.error('Error retrieving visitors by ID:', error);
-    res.status(500).send('An error occurred while retrieving visitors by ID');
+    console.error('Error retrieving visitor information by name:', error);
+    res.status(500).send('Internal Server Error');
+  } finally {
+    // Close the MongoDB connection
+    if (client) {
+      await client.close();
+    }
   }
 });
 
