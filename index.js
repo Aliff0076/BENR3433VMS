@@ -302,6 +302,25 @@ app.get('/allusers', verifyToken, async (req, res) => {
   }
 });
 
+app.get('/visitorpass', (req, res) => {
+  const id = req.query.id;
+
+  visitorsCollectionDB
+    .find({ id })
+    .toArray()
+    .then((visitors) => {
+      if (visitors.length === 0) {
+        res.send('No visitors found ');
+      } else {
+        res.send(visitors);
+      }
+    })
+    .catch((error) => {
+      console.error('Error retrieving visitors by contact:', error);
+      res.status(500).send('An error occurred while retrieving visitors by contact');
+    });
+});
+
 
 app.patch('/editvisitor/:id', verifyToken, async (req, res) => {
   const visitorId = req.params.id;
