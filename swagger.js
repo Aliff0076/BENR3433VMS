@@ -234,15 +234,15 @@
  * @swagger
  * /visitorpass:
  *   get:
- *     summary: "Retrieve visitors by ID"
- *     description: "Retrieve visitors from the visitors collection by providing an ID."
+ *     summary: "Retrieve visitors by name"
+ *     description: "Retrieve visitors from the visitors collection by providing name."
  *     tags:
  *         - Visitors
  *     parameters:
  *       - in: query
  *         name: visitorname
  *         required: true
- *         description: "The ID to filter visitors by."
+ *         description: "The name to filter visitors by."
  *         schema:
  *           type: string
  *     responses:

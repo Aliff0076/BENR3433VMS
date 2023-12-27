@@ -325,7 +325,7 @@ app.get('/visitorpass', async (req, res) => {
     const visitor = await client
       .db('benr3433')
       .collection('visitors')
-      .findOne({ name: visitorname });
+      .findOne({ name: visitorName });
 
     if (visitor) {
       res.send(visitor);
@@ -342,6 +342,7 @@ app.get('/visitorpass', async (req, res) => {
     }
   }
 });
+
 
 
 
