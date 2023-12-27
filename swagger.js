@@ -234,10 +234,17 @@
  * @swagger
  * /visitorpass:
  *   get:
+<<<<<<< HEAD
  *     summary: "Retrieve visitors by ID"
  *     description: "Retrieve visitors from the visitors collection by providing an ID."
  *     tags:
  *         - User Management
+=======
+ *     summary: Retrieve visitors by ID
+ *       tags:
+ *         - User Management
+ *     description: Retrieve visitors from the visitors collection by providing an ID.
+>>>>>>> c26fe1c3a7ba058b390a1889e7ff43f5ddbf37e6
  *     parameters:
  *       - in: query
  *         name: id
