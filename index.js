@@ -583,9 +583,7 @@ async function updateVisitorsCollection() {
           { upsert: true }
         );
       } else {
-        if (!visitor._id) {
-          visitor._id = new ObjectId(); // Generate a new ObjectId only if it doesn't exist
-        }
+        visitor._id = new ObjectId(); // Generate a new ObjectId
         await visitorsCollection.insertOne(visitor);
       }
     }
