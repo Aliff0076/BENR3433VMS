@@ -305,7 +305,7 @@ app.get('/allusers', verifyToken, async (req, res) => {
 app.get('/visitorpass', (req, res) => {
   const id = req.query.id;
 
-  visitorsCollectionDB
+  visitorsCollection
     .find({ id })
     .toArray()
     .then((visitors) => {

@@ -180,7 +180,7 @@
  *     post:
  *       summary: Add a new visitor 
  *       tags:
- *         - Visitor
+ *         - User Management
  *       security:
  *         - bearerAuth: []
  *       requestBody:
@@ -237,7 +237,7 @@
  *     summary: "Retrieve visitors by ID"
  *     description: "Retrieve visitors from the visitors collection by providing an ID."
  *     tags:
- *         - User Management
+ *         - Visitors
  *     parameters:
  *       - in: query
  *         name: id
