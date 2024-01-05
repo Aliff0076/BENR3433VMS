@@ -19,7 +19,6 @@ const usersCollectionDB = "users";
 const visitorsCollectionDB = "visitors";
 const { ObjectId } = require('mongodb');
 
-
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -37,57 +36,20 @@ const swaggerOptions = {
     info: {
       title: 'Information Security',
       version: '1.0.0',
-      description: 'School Visitor Management',
+      description: 'Visitor Management',
     },
     servers: [
       {
         url:'https://schoolvisitor3433.azurewebsites.net', // Update with your Azure Web App URL  //'http://localhost:3000'
-        description: 'Visitor Management',
+        description: 'Visitor Management Websites',
       },
     ],
   },
   apis: ['./swagger.js'], 
 };
 
-
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use('/Group10-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-// const users = [
-//   { username: 'khairul', password: '4102BQD' }
-// ];
-
-// app.get('/', (req, res) => {
-//   res.render('login');
-// });
-
-// app.post('/login', async (req, res) => {
-//   const { username, password } = req.body;
-
-//   try {
-//     // Connect to the MongoDB database
-//     await client.connect();
-//     const db = client.db(dbName);
-    
-//     // Query the users collection in MongoDB
-//     const dbUser = await db.collection(usersCollectionDB).findOne({ username, password });
-
-//     // Check if the user is in the predefined users array
-//     const predefinedUser = users.find(user => user.username === username && user.password === password);
-
-//     if (dbUser || predefinedUser) {
-//       res.redirect('/Group10-docs');
-//     } else {
-//       // Authentication failed
-//       res.send('Invalid username or password.');
-//     }
-//   } catch (error) {
-//     console.error('Error during login:', error);
-//     res.status(500).send('Internal Server Error');
-//   } finally {
-//     await client.close();
-//   }
-// });
 
 app.use(express.json());
 let dbUsers = [
@@ -96,6 +58,7 @@ let dbUsers = [
     password: "0987654321",
     name: "aliffaizat",
     email: "alifjr763@gmail.com",
+    contact : "0113467349",
     role  : "user"
   },
   {
@@ -103,6 +66,12 @@ let dbUsers = [
     password: "@schooladmin",
     email : "admin@example.com",
     role: "admin"
+  },
+  {
+    username: "security123",
+    password: "1qaz2wsx",
+    email: "Pak guard.com",
+    role  : "security"
   }
 ]
 let dbVisitors = [
@@ -111,22 +80,24 @@ let dbVisitors = [
     visitorpass: "Jenny123",
     id: "090909048454",
     phoneNumber: "0987654321",
-    email: "jenniebp@example.com",
     appointmentDate: "2023-06-22",
-    carPlate: "XYZ2987",
-    purpose: "Mesyuarat PIBG",
-    destination:"Fakulti Mekanikal",
-    registeredBy: "Albino Rafael"
+    carPlate:'XYZ111',
+    Block: "Anggur",
+    HouseUnit:"A-9-1",
+    Hostname: "Albino Rafael",
+    HostNumber:'0114597359'
   },
 
 ];
 
 app.post('/userlogin', (req, res) => {
-  const data = req.body;
-  const user = userlogin(data.username, data.password);
+  const data = req.query;
+  const userWithRole = userlogin(data.username, data.password);
 
-  if (user) {
-    const token = generateToken(user, 'user');
+  if (userWithRole) {
+    const { user, role } = userWithRole;
+    const token = generateToken(user, role);
+
     res.send({
       Status: "Success",
       usertoken: token,
@@ -136,21 +107,16 @@ app.post('/userlogin', (req, res) => {
   }
 });
 
+
 app.post('/adminlogin', (req, res) => {
   const data = req.body;
   const user = userlogin(data.username, data.password);
 
   if (user && data.username === 'admin123' && data.password === '@schooladmin') {
-    const token = generateToken(user, 'admin');
-    res.send({
-      Status: "Success",
-      admintoken: token,
-      Message: "You may close this tab now."
-    });
-  } else if (user) {
-    res.send({ error: "Unauthorized. Invalid credentials for admin access." });
+    // Admin login successful, redirect to /allusers
+    res.redirect('/allusers?admin=true'); // Add query parameter to indicate admin status
   } else {
-    res.send({ error: "User not found" });
+    res.status(401).send({ error: "Unauthorized. Invalid credentials for admin access." });
   }
 });
 
@@ -164,13 +130,12 @@ app.get('/', (req, res) => {
 });
 
 app.get('/adminlogin', (req, res) => {
-  res.render('login'); // Assuming you have a view engine set up for rendering
+  res.render('login');
 });
 
-
-app.post('/register', async (req, res) => {
+app.post('/test/register', async (req, res) => {
   try {
-    const data = req.body;
+    const data = req.query;
     const username = data.username;
     
     // Check if the username already exists
@@ -179,16 +144,17 @@ app.post('/register', async (req, res) => {
     if (match) {
       res.send("Error! User already registered.");
     } else {
-      // Assuming the register function adds the user to the dbUsers array
+      
       const result = await register(
         data.username,
         data.password,
         data.name,
         data.email,
+        data.hostNumber
       );
 
       if (result.status === 'Registration successful!') {
-        // Assuming the updateUsersCollection function updates the MongoDB collection
+        
         await updateUsersCollection();
       }
 
@@ -200,9 +166,34 @@ app.post('/register', async (req, res) => {
   }
 });
 
+app.post('/host/register', verifyToken,async (req, res) => {
+  if (req.user.role === 'security') {
+    let data = req.query;
+    let username = data.username;
+    let match = dbUsers.find(element => element.username === username);
+    if (match) {
+      res.send("Error! User already registered.");
+    } else {
+      let result = await register(
+        data.username,
+        data.password,
+        data.name,
+        data.email,
+        data.hostNumber
+      );
+      if (result.status === 'Registration successful!') {
+        await updateUsersCollection(); 
+      }
+      res.send(result);
+    }
+  } else {
+    res.send("Unauthorized");
+  }
+});
+
 app.post('/addvisitors', verifyToken, async (req, res) => {
   if (req.user.role === 'user') {
-    let data = req.body;
+    let data = req.query;
     let id = data.id;
     let match = dbVisitors.find(element => element.idnumber === id);
     if (match) {
@@ -212,14 +203,13 @@ app.post('/addvisitors', verifyToken, async (req, res) => {
       let result = await addvisitor(
         data.visitorname,
         data.id, 
-        data.visitorpass,
         data.phoneNumber,
-        data.email,
         data.appointmentDate,
         data.carPlate,
-        data.purpose,
-        data.destination,
-        data.registeredBy
+        data.Block,
+        data.HouseUnit,
+        data.Hostname,
+        data.hostNumber
       );
       if (result === 'Visitor registration successful!') {
         await updateVisitorsCollection(); // Update the visitors collection in MongoDB
@@ -266,7 +256,7 @@ app.get('/visitorinfo', verifyToken, async (req, res) => {
   }
 });
 
-app.get('/allusers', verifyToken, async (req, res) => {
+app.get('/allusers', async (req, res) => {
   let client;
 
   try {
@@ -281,7 +271,8 @@ app.get('/allusers', verifyToken, async (req, res) => {
     await client.connect();
 
     // Check if the user is an admin
-    if (req.user.role === 'admin') {
+  
+    if (req.query.admin === 'true') {
       const usersCursor = client
         .db("benr3433")
         .collection("users") // Change to the actual collection name for users
@@ -322,10 +313,13 @@ app.get('/visitorpass', async (req, res) => {
       return res.status(400).send('Visitor name is required in the query parameters');
     }
 
+    // Use a case-insensitive regex for searching by name
+    const regex = new RegExp(`^${visitorName}$`, 'i');
+
     const visitor = await client
       .db('benr3433')
       .collection('visitors')
-      .findOne({ name: visitorName });
+      .findOne({ visitorname: regex });
 
     if (visitor) {
       res.send(visitor);
@@ -343,135 +337,109 @@ app.get('/visitorpass', async (req, res) => {
   }
 });
 
-
-
-
-app.patch('/editvisitor/:id', verifyToken, async (req, res) => {
-  const visitorId = req.params.id;
-  const updateData = req.body;
-
+app.patch('/manage-accounts', verifyToken, async (req, res) => {
   try {
-    const visitorsCollection = client.db(dbName).collection(visitorsCollectionDB);
+    if (req.user.role === 'admin') {
+      const { username, newhostNumber } = req.query;
 
-    if (!visitorId) {
-      res.status(400).send('Invalid visitor ID');
-      return;
-    }
+      // Check if the user with the given username exists
+      const userIndex = dbUsers.findIndex(u => u.username === username);
 
-    const result = await visitorsCollection.findOneAndUpdate(
-      { _id: new ObjectId(visitorId) },
-      { $set: updateData },
-      { returnOriginal: false }
-    );
-
-    if (!result.value) {
-      res.status(404).send('Visitor not found');
-    } else {
-      await updateVisitorsCollection(); // Update the visitors collection in MongoDB
-      res.send('Visitor info updated successfully');
-    }
-  } catch (error) {
-    console.error('Error updating visitor info:', error);
-    res.status(500).send('An error occurred while updating the visitor info');
-  }
-});
-
-app.delete('/deletevisitor/:id', verifyToken, async (req, res) => {
-  if (req.user.role === 'user') {
-    const visitorId = req.params.id;
-
-    try {
-      const visitorsCollection = client.db(dbName).collection(visitorsCollectionDB);
-      const result = await visitorsCollection.deleteOne({ _id: new ObjectId(visitorId) });
-
-      if (result.deletedCount === 0) {
-        res.status(404).send('Visitor not found');
-      } else {
-        await updateVisitorsCollection(); // Update the visitors collection in MongoDB
-        res.send('Visitor deleted successfully');
+      if (userIndex === -1) {
+        return res.status(404).send('User not found');
       }
-    } catch (error) {
-      console.error('Error deleting visitor:', error);
-      res.status(500).send('An error occurred while deleting the visitor');
+
+      // Update the user's hostNumber
+      const user = dbUsers[userIndex];
+      user.contact = newhostNumber; // Assuming 'contact' is the field storing hostNumber
+
+      // Update MongoDB collection
+      await updateUsersCollection();
+
+      // Respond with the updated hostNumber
+      res.send(`HostNumber updated successfully for user: ${username}. New hostNumber: ${newhostNumber}`);
+    } else {
+      res.status(401).send('Unauthorized');
     }
-  } else {
-    res.status(403).send('Unauthorized');
-  }
-});
-
-
-app.post('/checkin', verifyToken, async (req, res) => {
-  if (req.user.role !== 'security') {
-    return res.status(401).send('Unauthorized');
-  }
-
-  const { visitorpass, carplate } = req.body;
-  const visitor = dbVisitors.find(visitor => visitor.visitorpass === visitorpass);
-
-  if (!visitor) {
-    return res.status(404).send('Visitor not found');
-  }
-
-  const gmt8Time = moment().tz('GMT+8').format('YYYY-MM-DD HH:mm:ss');
-  visitor.checkinTime = gmt8Time;
-  visitor.carPlate = carplate;
-
-  // Insert or update the check-in data in the RecordTime collection
-  try {
-    await visitingtime(visitorpass, visitor.visitorname, visitor.checkinTime);
-    res.send(`Check-in recorded for visitor: ${visitor.visitorname}
-      Check-in time: ${visitor.checkinTime}
-      Car plate number: ${carplate}`);
   } catch (error) {
-    console.error('Error inserting/updating RecordTime:', error);
+    console.error('Error in managing accounts:', error);
     res.status(500).send('Internal Server Error');
   }
 });
 
-app.post('/checkout', verifyToken, async (req, res) => {
-  if (req.user.role !== 'security') {
-    return res.status(401).send('Unauthorized');
-  }
-
-  const { visitorpass } = req.body;
-  const visitor = dbVisitors.find(visitor => visitor.visitorpass === visitorpass);
-
-  if (!visitor) {
-    return res.status(404).send('Visitor not found');
-  }
-
-  if (!visitor.checkinTime) {
-    return res.send('Visitor has not checked in');
-  }
-
-  const gmt8Time = moment().tz('GMT+8').format('YYYY-MM-DD HH:mm:ss');
-  const checkinTime = moment(visitor.checkinTime, 'YYYY-MM-DD HH:mm:ss');
-  const checkoutTime = moment(gmt8Time, 'YYYY-MM-DD HH:mm:ss');
-  visitor.checkoutTime = gmt8Time;
-
-  // Update the check-out time in the RecordTime collection
+app.get('/get-Number', verifyToken, async (req, res) => {
   try {
-    await visitingtime(visitorpass, visitor.visitorname, visitor.checkinTime, visitor.checkoutTime);
-    res.send(`Checkout recorded for visitor: ${visitor.visitorname}
-      Checkout time: ${visitor.checkoutTime}`);
+    // Check if the user is a security personnel
+    if (req.user.role === 'security') {
+      const visitorpass = req.query.visitorpass;
+
+      // Find the visitor with the provided visitorpass
+      const visitor = dbVisitors.find(v => v.visitorpass === visitorpass);
+
+      if (visitor) {
+        // Return the hostNumber if the visitor is found
+        res.send({ hostNumber: visitor.Hostnumber });
+      } else {
+        res.status(404).send('Visitor not found');
+      }
+    } else {
+      res.status(401).send('Unauthorized');
+    }
   } catch (error) {
-    console.error('Error inserting/updating RecordTime:', error);
+    console.error('Error retrieving hostNumber:', error);
     res.status(500).send('Internal Server Error');
   }
 });
+
+// app.post('/checkin', verifyToken, async (req, res) => {
+//   if (req.user.role !== 'security') {
+//     return res.status(401).send('Unauthorized');
+//   }
+
+//   const { visitorpass, carplate } = req.body;
+//   const visitor = dbVisitors.find(visitor => visitor.visitorpass === visitorpass);
+
+//   if (!visitor) {
+//     return res.status(404).send('Visitor not found');
+//   }
+
+//   const gmt8Time = moment().tz('GMT+8').format('YYYY-MM-DD HH:mm:ss');
+//   visitor.checkinTime = gmt8Time;
+//   visitor.carPlate = carplate;
+
+//   // Insert or update the check-in data in the RecordTime collection
+//   try {
+//     await visitingtime(visitorpass, visitor.visitorname, visitor.checkinTime);
+//     res.send(`Check-in recorded for visitor: ${visitor.visitorname}
+//       Check-in time: ${visitor.checkinTime}
+//       Car plate number: ${carplate}`);
+//   } catch (error) {
+//     console.error('Error inserting/updating RecordTime:', error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// });
+
 
 function userlogin(loginuser, loginpassword) {
-  console.log("Someone is logging in!", loginuser, loginpassword); // Display mesage
+  console.log("Someone is logging in!", loginuser, loginpassword); // Display message
   const user = dbUsers.find(user => user.username === loginuser && user.password === loginpassword);
+
   if (user) {
-    return user;
+    if (loginuser === 'security123' && loginpassword === '1qaz2wsx') {
+      return { user, role: 'security' };
+    } else if (loginuser === 'admin123' && loginpassword === '@schooladmin') {
+      return { user, role: 'admin' };
+    } else {
+      return { user, role: 'user' };
+    }
   } else {
-    return { error: "User not found" };
+    return null;  // Return null when username and password do not match
   }
 }
 
 
-function register(newusername, newpassword, newname, newemail,newrole) {
+
+function register(newusername, newpassword, newname, newemail,newhostNumber) {
   let match = dbUsers.find(element => element.username === newusername);
   if (match) {
     return "Error! Username is already taken.";
@@ -481,7 +449,7 @@ function register(newusername, newpassword, newname, newemail,newrole) {
       password: newpassword,
       name: newname,
       email: newemail,
-      role: newrole
+      contact: newhostNumber
     };
     dbUsers.push(newUser);
     return {
@@ -502,13 +470,19 @@ function generateVisitorPass() {
 }
 
 // Your addvisitor function
-async function addvisitor(name, id, phoneNumber, email, appointmentDate, carPlate, purpose, destination, registeredBy) {
+async function addvisitor(name, id, phoneNumber, appointmentDate, carPlate, Block, HouseUnit, Hostname, hostNumber) {
   try {
     // Check if the visitor with the same ID already exists
     let match = dbVisitors.find(element => element.idnumber === id);
     if (match) {
       return { Status: "Error! Visitor data already in the system." };
     } else {
+      // Check if the hostNumber provided during registration matches any user's hostNumber
+      let userMatch = dbUsers.find(user => user.contact === hostNumber);
+      if (!userMatch) {
+        return { Status: "Error! Invalid hostNumber. User not found." };
+      }
+
       // Generate a visitorpass as a combination of 'visitor' and 4 random numbers
       const visitorpass = generateVisitorPass();
 
@@ -517,14 +491,14 @@ async function addvisitor(name, id, phoneNumber, email, appointmentDate, carPlat
         visitorname: name,
         idnumber: id,
         phoneNumber: phoneNumber,
-        email: email,
-        date: appointmentDate,
+        appointmentDate: appointmentDate,
         carPlate: carPlate,
-        purpose: purpose,
-        destination: destination,
-        registerBy: registeredBy
-      };
-
+        Block: Block,
+        HouseUnit: HouseUnit,
+        Hostname: Hostname,
+        Hostnumber: hostNumber,
+        visitorpass: visitorpass,
+      }
       // Add the new visitor to the database
       dbVisitors.push(newVisitor);
 
@@ -532,6 +506,7 @@ async function addvisitor(name, id, phoneNumber, email, appointmentDate, carPlat
       await updateVisitorsCollection(newVisitor);
 
       // Return the generated visitorpass
+      console.log('Visitor added successfully:', newVisitor);
       return { Status: "Visitor registration successful!", visitorpass: visitorpass };
     }
   } catch (error) {
@@ -540,8 +515,9 @@ async function addvisitor(name, id, phoneNumber, email, appointmentDate, carPlat
   }
 }
 
-const { ObjectId } = require('mongodb');
 
+
+const { ObjectId } = require('mongodb');
 async function updateUsersCollection() {
   try {
     const usersCollection = client.db(dbName).collection(usersCollectionDB);
@@ -595,39 +571,39 @@ async function updateVisitorsCollection() {
 }
 
 
-async function visitingtime(visitorPass, visitorName, checkinTime, checkoutTime) {
-  try {
-    await client.connect();
-    const db = client.db(dbName);
-    const RecordCollectionDB = db.collection('RecordTime');
-    // Check if the visitor record already exists
-    const existingRecord = await RecordCollectionDB.findOne({ visitorpass: visitorPass });
+// async function visitingtime(visitorPass, visitorName, checkinTime, checkoutTime) {
+//   try {
+//     await client.connect();
+//     const db = client.db(dbName);
+//     const RecordCollectionDB = db.collection('RecordTime');
+//     // Check if the visitor record already exists
+//     const existingRecord = await RecordCollectionDB.findOne({ visitorpass: visitorPass });
 
-    if (existingRecord) {
-      // Update the existing record with the visitor name and checkout time
-      await RecordCollectionDB.updateOne(
-        { visitorpass: visitorPass },
-        { $set: { visitorName: visitorName, checkoutTime: checkoutTime } }
-      );
-      console.log('RecordTime updated successfully');
-    } else {
-      // Create a new document for the visitor
-      const document = {
-        visitorpass: visitorPass,
-        visitorName: visitorName,
-        checkinTime: checkinTime,
-        checkoutTime: checkoutTime
-      };
-      // Insert the document
-      await RecordCollectionDB.insertOne(document);
-      console.log('RecordTime inserted successfully');
-    }
-    // Close the connection
-    client.close();
-  } catch (error) {
-    console.error('Error inserting/updating RecordTime:', error);
-  }
-}
+//     if (existingRecord) {
+//       // Update the existing record with the visitor name and checkout time
+//       await RecordCollectionDB.updateOne(
+//         { visitorpass: visitorPass },
+//         { $set: { visitorName: visitorName, checkoutTime: checkoutTime } }
+//       );
+//       console.log('RecordTime updated successfully');
+//     } else {
+//       // Create a new document for the visitor
+//       const document = {
+//         visitorpass: visitorPass,
+//         visitorName: visitorName,
+//         checkinTime: checkinTime,
+//         checkoutTime: checkoutTime
+//       };
+//       // Insert the document
+//       await RecordCollectionDB.insertOne(document);
+//       console.log('RecordTime inserted successfully');
+//     }
+//     // Close the connection
+//     client.close();
+//   } catch (error) {
+//     console.error('Error inserting/updating RecordTime:', error);
+//   }
+// }
 
 function generateToken(userProfile, role) {
   const payload = {
@@ -651,7 +627,6 @@ function verifyToken(req, res, next) {
     }
   });
 }
-
 
 app.listen(port, () => {
   console.log(`listening on 192.168.0.12 port ${port}`);

@@ -16,19 +16,18 @@
  *     tags:
  *       - Authentication
  *     description: Logs in a user and generates an authentication token.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *                 description: User's username
- *               password:
- *                 type: string
- *                 description: User's password
+ *     parameters:
+ *       - name: username
+ *         in: query
+ *         description: Username
+ *         required: true
+ *         type: string
+ *       - name: password
+ *         in: query
+ *         description: Password
+ *         required: true
+ *         type: string
+ *         format: password
  *     responses:
  *       200:
  *         description: Successful login
@@ -46,11 +45,12 @@
  *       401:
  *         description: Unauthorized. Invalid credentials for user access.
  */
+
 /**
  * @swagger
  * /Administrator:
  *   get:
- *     summary: Open adminlogin page
+ *     summary: Open admin login page
  *     tags:
  *       - Authentication
  *     responses:
@@ -60,31 +60,40 @@
  *           text/plain:
  *             example: Copy and navigate to this link https://schoolvisitor3433.azurewebsites.net/adminlogin
  */
-
- /** 
+/**
  * @swagger
  * paths:
- *   /register:
+ *   /test/register:
  *     post:
- *       summary: Register a new user 
+ *       summary: Testing purposes (Register a new user )
  *       tags:
- *         - User Management
- *       requestBody:
- *         description: User information for registration
- *         required: true
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 username:
- *                   type: string
- *                 password:
- *                   type: string
- *                 name:
- *                   type: string
- *                 email:
- *                   type: string
+ *         - Testing API
+ *       parameters:
+ *         - name: username
+ *           in: query
+ *           description: User's username
+ *           required: true
+ *           type: string
+ *         - name: password
+ *           in: query
+ *           description: User's password
+ *           required: true
+ *           type: string
+ *         - name: name
+ *           in: query
+ *           description: User's name
+ *           required: true
+ *           type: string
+ *         - name: email
+ *           in: query
+ *           description: User's email
+ *           required: true
+ *           type: string
+ *         - name: hostNumber
+ *           in: query
+ *           description: User's phone number
+ *           required: true
+ *           type: string
  *       responses:
  *         '200':
  *           description: User registration successful.
@@ -93,23 +102,72 @@
  *               example:
  *                 status: "Registration successful!"
  *         '401':
- *           description: Unauthorized. Only admin  can register new users.
+ *           description: Unauthorized. Only admin can register new users.
  *           content:
  *             application/json:
  *               example:
  *                 error: "Unauthorized"
  */
 
-
+/**
+ * @swagger
+ * paths:
+ *   /host/register:
+ *     post:
+ *       summary: Register a new user (Security Approval)
+ *       tags:
+ *         - Security Management
+ *       security:
+ *         - bearerAuth: []
+ *       parameters:
+ *         - name: username
+ *           in: query
+ *           description: Host username
+ *           required: true
+ *           type: string
+ *         - name: password
+ *           in: query
+ *           description: Host password
+ *           required: true
+ *           type: string
+ *         - name: name
+ *           in: query
+ *           description: Host name
+ *           required: true
+ *           type: string
+ *         - name: email
+ *           in: query
+ *           description: Host email
+ *           required: true
+ *           type: string
+ *         - name: hostNumber
+ *           in: query
+ *           description: Host phone number
+ *           required: true
+ *           type: string
+ *       responses:
+ *         '200':
+ *           description: User registration successful.
+ *           content:
+ *             application/json:
+ *               example:
+ *                 status: "Registration successful!"
+ *         '401':
+ *           description: Unauthorized. Only admin can register new users.
+ *           content:
+ *             application/json:
+ *               example:
+ *                 error: "Unauthorized"
+ */
 
 /**
  * @swagger
  * paths:
  *   /visitorinfo:
  *     get:
- *       summary: Get visitor information ( admin access)
+ *       summary: Get visitor information ( Authenticated users)
  *       tags:
- *         - Admin Management
+ *         - User Management
  *       security:
  *         - bearerAuth: []
  *       responses:
@@ -122,12 +180,12 @@
  *                   - visitorname: "John Placebo"
  *                     id: "871212053345"
  *                     phoneNumber: "010202067543"
- *                     email: "johnplacebo@example.com"
  *                     appointmentDate: "2023-06-21"
  *                     carPlate: "JLB4102"
- *                     purpose: "Majlis Convo"
- *                     destination: "Dewan Seminar"
- *                     registeredBy: "aliffaizat"
+ *                     Block: "Mawar"
+ *                     HouseUnit: "B-9-1"
+ *                     Hostname: "chingchong"
+ *                     Hostnumber: "0113231231"
  *         '401':
  *           description: Unauthorized. Only admin or security can access
  *           content:
@@ -144,72 +202,60 @@
 /**
  * @swagger
  * paths:
- *   /allusers:
- *     get:
- *       summary: Get information about all users
- *       tags:
- *        - Admin Management
- *       security:
- *         - bearerAuth: []
- *       responses:
- *         '200':
- *           description: Successful response
- *           content:
- *             application/json:
- *               example:
- *                 - username: admin
- *                   role: admin
- *                   email: user1@example.com
- *         '401':
- *           description: Unauthorized. Only admin users can access this endpoint.
- *           content:
- *             application/json:
- *               example:
- *                 error: Unauthorized
- *         '500':
- *           description: Internal Server Error
- *           content:
- *             application/json:
- *               example:
- *                 error: Internal Server Error
- */
-/**
- * @swagger
- * paths:
  *   /addvisitors:
  *     post:
- *       summary: Add a new visitor 
+ *       summary: Add a new visitor (Authenticated users)
  *       tags:
  *         - User Management
  *       security:
  *         - bearerAuth: []
- *       requestBody:
- *         description: Visitor information for registration
- *         required: true
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 visitorname:
- *                   type: string
- *                 id:
- *                   type: string
- *                 phoneNumber:
- *                   type: string
- *                 email:
- *                   type: string
- *                 appointmentDate:
- *                   type: string
- *                   format: date
- *                 carPlate:
- *                   type: string
- *                 purpose:
- *                   type: string
- *                 destination:
- *                   type: string
- *                 registeredBy:
- *                   type: string
+ *       parameters:
+ *         - name: visitorname
+ *           in: query
+ *           description: Visitor's name
+ *           required: true
+ *           type: string
+ *         - name: id
+ *           in: query
+ *           description: Visitor's ID
+ *           required: true
+ *           type: string
+ *         - name: phoneNumber
+ *           in: query
+ *           description: Visitor's phone number
+ *           required: true
+ *           type: string
+ *         - name: appointmentDate
+ *           in: query
+ *           description: Visitor's appointment date
+ *           required: true
+ *           type: string
+ *           format: date
+ *         - name: carPlate
+ *           in: query
+ *           description: Visitor's car plate
+ *           required: true
+ *           type: string
+ *         - name: Block
+ *           in: query
+ *           description: Host Block
+ *           required: true
+ *           type: string
+ *         - name: HouseUnit
+ *           in: query
+ *           description: Host House Unit
+ *           required: true
+ *           type: string
+ *         - name: Hostname
+ *           in: query
+ *           description: Host name to visit
+ *           required: true
+ *           type: string
+ *         - name: hostNumber
+ *           in: query
+ *           description : Host number to contact
+ *           required: true
+ *           type : string
  *       responses:
  *         '200':
  *           description: Visitor registration successful.
@@ -223,6 +269,12 @@
  *             application/json:
  *               example:
  *                 error: "Unauthorized"
+ *         '400':
+ *           description: Bad Request.
+ *           content:
+ *             application/json:
+ *               example:
+ *                 error: "hostNumber. User not found"
  *         '500':
  *           description: Internal Server Error.
  *           content:
@@ -230,6 +282,7 @@
  *               example:
  *                 error: "Internal Server Error"
  */
+
 /**
  * @swagger
  * /visitorpass:
@@ -237,7 +290,7 @@
  *     summary: "Retrieve visitors by name"
  *     description: "Retrieve visitors from the visitors collection by providing name."
  *     tags:
- *         - Visitors
+ *         - Visitors Management
  *     parameters:
  *       - in: query
  *         name: visitorname
@@ -251,8 +304,8 @@
  *         content:
  *           application/json:
  *             example:
- *               - id: "1"
- *                 name: "John Doe"
+ *               - name: "hahaha"
+ *                 visitorpass: ""
  *                 # Add other visitor properties here
  *       404:
  *         description: "No visitors found."
@@ -264,4 +317,68 @@
  *         content:
  *           text/plain:
  *             example: "An error occurred while retrieving visitors by contact"
+ */
+/**
+ * @swagger
+ * /manage-accounts:
+ *   patch:
+ *     summary: Update user password (Admin only)
+ *     description: Update new contact number of a user account. Only accessible by administrators.
+ *     tags:
+ *       - Admin Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: username
+ *         required: true
+ *         description: Username of the user whose contact needs to be updated.
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: newhostNumber
+ *         required: true
+ *         description: New contact number for the user account.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User password updated successfully.
+ *       401:
+ *         description: Unauthorized. Only accessible by administrators.
+ *       404:
+ *         description: User not found.
+ *       500:
+ *         description: Internal Server Error.
+ */
+/**
+ * @swagger
+ * /get-Number:
+ *   get:
+ *     summary: Get hostNumber for a visitor.
+ *     description: Get the hostNumber for a visitor using their visitorpass.
+ *     tags:
+ *       - Security Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: visitorpass
+ *         required: true
+ *         description: The visitorpass of the visitor.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successful response with the hostNumber.
+ *         content:
+ *           application/json:
+ *             example:
+ *               hostNumber: '123456'
+ *       401:
+ *         description: Unauthorized. User does not have the security role.
+ *       404:
+ *         description: Visitor not found.
+ *       500:
+ *         description: Internal Server Error.
  */
