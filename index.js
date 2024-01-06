@@ -345,14 +345,14 @@ app.patch('/manage-accounts', verifyToken, async (req, res) => {
       const { username, newhostNumber } = req.query;
 
       // Check if the user with the given username exists
-      const user = await usersCollection.findOne({ username: username });
+      const user = await usersCollectionDB.findOne({ username });
 
       if (!user) {
         return res.status(404).send('User not found');
       }
 
-      // Update the user's hostNumber in MongoDB
-      await usersCollection.updateOne({ _id: user._id }, { $set: { contact: newhostNumber } });
+      // Update the user's hostNumber
+      await usersCollectionDB.updateOne({ username }, { $set: { contact: newhostNumber } });
 
       res.send(`HostNumber updated successfully for user: ${username}`);
     } else {
@@ -364,15 +364,14 @@ app.patch('/manage-accounts', verifyToken, async (req, res) => {
   }
 });
 
-
 app.get('/get-Number', verifyToken, async (req, res) => {
   try {
     // Check if the user is a security personnel
     if (req.user.role === 'security') {
       const visitorpass = req.query.visitorpass;
 
-      // Find the visitor with the provided visitorpass in MongoDB
-      const visitor = await visitorsCollection.findOne({ visitorpass: visitorpass });
+      // Find the visitor with the provided visitorpass
+      const visitor = await visitorsCollectionDB.findOne({ visitorpass });
 
       if (visitor) {
         // Return the hostNumber if the visitor is found
@@ -388,6 +387,7 @@ app.get('/get-Number', verifyToken, async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+
 
 
 
