@@ -340,19 +340,34 @@ app.get('/visitorpass', async (req, res) => {
 });
 
 app.patch('/manage-accounts', verifyToken, async (req, res) => {
+  let client;
+
   try {
     if (req.user.role === 'admin') {
       const { username, newhostNumber } = req.query;
 
-      // Check if the user with the given username exists
-      const user = await usersCollectionDB.findOne({ username });
+      if (!username || !newhostNumber) {
+        return res.status(400).send('Bad Request: Missing parameters');
+      }
+
+      // Connect to the MongoDB server
+      client = new MongoClient(uri, {
+        serverApi: {
+          version: '1',
+          strict: true,
+          deprecationErrors: true,
+        },
+      });
+      await client.connect();
+
+      const user = await client.db('benr3433').collection('users').findOne({ username });
 
       if (!user) {
         return res.status(404).send('User not found');
       }
 
-      // Update the user's hostNumber
-      await usersCollectionDB.updateOne({ username }, { $set: { contact: newhostNumber } });
+      await client.db('benr3433').collection('users')
+        .updateOne({ username }, { $set: { contact: newhostNumber } });
 
       res.send(`HostNumber updated successfully for user: ${username}`);
     } else {
@@ -361,20 +376,39 @@ app.patch('/manage-accounts', verifyToken, async (req, res) => {
   } catch (error) {
     console.error('Error in managing accounts:', error);
     res.status(500).send('Internal Server Error');
+  } finally {
+    // Close the MongoDB connection
+    if (client) {
+      await client.close();
+    }
   }
 });
 
 app.get('/get-Number', verifyToken, async (req, res) => {
-  try {
-    // Check if the user is a security personnel
-    if (req.user.role === 'security') {
-      const visitorpass = req.query.visitorpass;
+  let client;
 
-      // Find the visitor with the provided visitorpass
-      const visitor = await visitorsCollectionDB.findOne({ visitorpass });
+  try {
+    if (req.user.role === 'security') {
+      const { visitorpass } = req.query;
+
+      if (!visitorpass) {
+        return res.status(400).send('Bad Request: Missing parameter');
+      }
+
+      // Connect to the MongoDB server
+      client = new MongoClient(uri, {
+        serverApi: {
+          version: '1',
+          strict: true,
+          deprecationErrors: true,
+        },
+      });
+      await client.connect();
+
+      const visitor = await client.db('benr3433').collection('visitors')
+        .findOne({ visitorpass });
 
       if (visitor) {
-        // Return the hostNumber if the visitor is found
         res.send({ hostNumber: visitor.Hostnumber });
       } else {
         res.status(404).send('Visitor not found');
@@ -385,9 +419,13 @@ app.get('/get-Number', verifyToken, async (req, res) => {
   } catch (error) {
     console.error('Error retrieving hostNumber:', error);
     res.status(500).send('Internal Server Error');
+  } finally {
+    // Close the MongoDB connection
+    if (client) {
+      await client.close();
+    }
   }
 });
-
 
 
 
