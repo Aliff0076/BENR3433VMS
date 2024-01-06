@@ -40,8 +40,10 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url:'https://schoolvisitor3433.azurewebsites.net', // Update with your Azure Web App URL  //'http://localhost:3000'
+        url:'https://schoolvisitor3433.azurewebsites.net', // Update with your Azure Web App URL 
         description: 'Visitor Management Websites',
+        // url:'http://localhost:3000', // Update with your Azure Web App URL  // testing
+        // description: 'Visitor Management Websites',
       },
     ],
   },
@@ -343,21 +345,16 @@ app.patch('/manage-accounts', verifyToken, async (req, res) => {
       const { username, newhostNumber } = req.query;
 
       // Check if the user with the given username exists
-      const userIndex = dbUsers.findIndex(u => u.username === username);
+      const user = await usersCollection.findOne({ username: username });
 
-      if (userIndex === -1) {
+      if (!user) {
         return res.status(404).send('User not found');
       }
 
-      // Update the user's hostNumber
-      const user = dbUsers[userIndex];
-      user.contact = newhostNumber; // Assuming 'contact' is the field storing hostNumber
+      // Update the user's hostNumber in MongoDB
+      await usersCollection.updateOne({ _id: user._id }, { $set: { contact: newhostNumber } });
 
-      // Update MongoDB collection
-      await updateUsersCollection();
-
-      // Respond with the updated hostNumber
-      res.send(`HostNumber updated successfully for user: ${username}. New hostNumber: ${newhostNumber}`);
+      res.send(`HostNumber updated successfully for user: ${username}`);
     } else {
       res.status(401).send('Unauthorized');
     }
@@ -367,14 +364,15 @@ app.patch('/manage-accounts', verifyToken, async (req, res) => {
   }
 });
 
+
 app.get('/get-Number', verifyToken, async (req, res) => {
   try {
     // Check if the user is a security personnel
     if (req.user.role === 'security') {
       const visitorpass = req.query.visitorpass;
 
-      // Find the visitor with the provided visitorpass
-      const visitor = dbVisitors.find(v => v.visitorpass === visitorpass);
+      // Find the visitor with the provided visitorpass in MongoDB
+      const visitor = await visitorsCollection.findOne({ visitorpass: visitorpass });
 
       if (visitor) {
         // Return the hostNumber if the visitor is found
@@ -391,33 +389,6 @@ app.get('/get-Number', verifyToken, async (req, res) => {
   }
 });
 
-// app.post('/checkin', verifyToken, async (req, res) => {
-//   if (req.user.role !== 'security') {
-//     return res.status(401).send('Unauthorized');
-//   }
-
-//   const { visitorpass, carplate } = req.body;
-//   const visitor = dbVisitors.find(visitor => visitor.visitorpass === visitorpass);
-
-//   if (!visitor) {
-//     return res.status(404).send('Visitor not found');
-//   }
-
-//   const gmt8Time = moment().tz('GMT+8').format('YYYY-MM-DD HH:mm:ss');
-//   visitor.checkinTime = gmt8Time;
-//   visitor.carPlate = carplate;
-
-//   // Insert or update the check-in data in the RecordTime collection
-//   try {
-//     await visitingtime(visitorpass, visitor.visitorname, visitor.checkinTime);
-//     res.send(`Check-in recorded for visitor: ${visitor.visitorname}
-//       Check-in time: ${visitor.checkinTime}
-//       Car plate number: ${carplate}`);
-//   } catch (error) {
-//     console.error('Error inserting/updating RecordTime:', error);
-//     res.status(500).send('Internal Server Error');
-//   }
-// });
 
 
 function userlogin(loginuser, loginpassword) {
