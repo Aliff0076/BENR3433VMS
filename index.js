@@ -562,47 +562,12 @@ async function updateVisitorsCollection() {
 }
 
 
-// async function visitingtime(visitorPass, visitorName, checkinTime, checkoutTime) {
-//   try {
-//     await client.connect();
-//     const db = client.db(dbName);
-//     const RecordCollectionDB = db.collection('RecordTime');
-//     // Check if the visitor record already exists
-//     const existingRecord = await RecordCollectionDB.findOne({ visitorpass: visitorPass });
-
-//     if (existingRecord) {
-//       // Update the existing record with the visitor name and checkout time
-//       await RecordCollectionDB.updateOne(
-//         { visitorpass: visitorPass },
-//         { $set: { visitorName: visitorName, checkoutTime: checkoutTime } }
-//       );
-//       console.log('RecordTime updated successfully');
-//     } else {
-//       // Create a new document for the visitor
-//       const document = {
-//         visitorpass: visitorPass,
-//         visitorName: visitorName,
-//         checkinTime: checkinTime,
-//         checkoutTime: checkoutTime
-//       };
-//       // Insert the document
-//       await RecordCollectionDB.insertOne(document);
-//       console.log('RecordTime inserted successfully');
-//     }
-//     // Close the connection
-//     client.close();
-//   } catch (error) {
-//     console.error('Error inserting/updating RecordTime:', error);
-//   }
-// }
-
-function generateToken(userProfile, role) {
+function generateToken(username, role) {
   const payload = {
-    userProfile,
+    username,
     role
   };
-  return jwt.sign(payload, 'asdfghjkl', 
-  { expiresIn: 30 * 60 });
+  return jwt.sign(payload, 'asdfghjkl', { expiresIn: 30 * 60 });
 }
 
 function verifyToken(req, res, next) {
@@ -613,7 +578,10 @@ function verifyToken(req, res, next) {
     if (err) {
       res.send("Invalid Token");
     } else {
-      req.user = decoded;
+      req.user = {
+        username: decoded.username,
+        role: decoded.role
+      };
       next();
     }
   });
