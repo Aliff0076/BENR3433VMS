@@ -38,7 +38,7 @@
  *               properties:
  *                 Status:
  *                   type: string
- *                   description: Status of the login operation (e.g., "Success")
+ *                   description: Status of the login operation 
  *                 usertoken:
  *                   type: string
  *                   description: Authentication token for the user
@@ -79,7 +79,7 @@
  *           description: User's password
  *           required: true
  *           type: string
- *         - name: name
+ *         - name: Hostname
  *           in: query
  *           description: User's name
  *           required: true
@@ -102,7 +102,7 @@
  *               example:
  *                 status: "Registration successful!"
  *         '401':
- *           description: Unauthorized. Only admin can register new users.
+ *           description: Unauthorized. Only security can register new users.
  *           content:
  *             application/json:
  *               example:
@@ -130,7 +130,7 @@
  *           description: Host password
  *           required: true
  *           type: string
- *         - name: name
+ *         - name: Hostname
  *           in: query
  *           description: Host name
  *           required: true
@@ -177,8 +177,8 @@
  *             application/json:
  *               example:
  *                 visitors:
- *                   - visitorname: "John Placebo"
- *                     id: "871212053345"
+ *                   - visitorname: "John Wick"
+ *                     id: "30"
  *                     phoneNumber: "010202067543"
  *                     appointmentDate: "2023-06-21"
  *                     carPlate: "JLB4102"
@@ -186,6 +186,7 @@
  *                     HouseUnit: "B-9-1"
  *                     Hostname: "chingchong"
  *                     Hostnumber: "0113231231"
+ *                     visitorpass: "visitor4567"
  *         '401':
  *           description: Unauthorized. Only admin or security can access
  *           content:
@@ -274,7 +275,7 @@
  *           content:
  *             application/json:
  *               example:
- *                 error: "hostNumber. User not found"
+ *                 error: "hostNumber must be the same registered number"
  *         '500':
  *           description: Internal Server Error.
  *           content:
@@ -306,7 +307,7 @@
  *             example:
  *               - name: "hahaha"
  *                 visitorpass: ""
- *                 # Add other visitor properties here
+ *                 
  *       404:
  *         description: "No visitors found."
  *         content:

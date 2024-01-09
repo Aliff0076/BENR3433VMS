@@ -40,10 +40,10 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url:'https://schoolvisitor3433.azurewebsites.net', // Update with your Azure Web App URL 
-        description: 'Visitor Management Websites',
-        // url:'http://localhost:3000', // Update with your Azure Web App URL  // testing
+        // url:'https://schoolvisitor3433.azurewebsites.net', // Update with your Azure Web App URL 
         // description: 'Visitor Management Websites',
+        url:'http://localhost:3000', // Update with your Azure Web App URL  // testing
+        description: 'Visitor Management Websites',
       },
     ],
   },
@@ -55,14 +55,6 @@ app.use('/Group10-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(express.json());
 let dbUsers = [
-  {
-    username: "aliffkhairul",
-    password: "0987654321",
-    name: "aliffaizat",
-    email: "alifjr763@gmail.com",
-    contact : "0113467349",
-    role  : "user"
-  },
   {
     username: "admin123",
     password: "@schooladmin",
@@ -76,21 +68,7 @@ let dbUsers = [
     role  : "security"
   }
 ]
-let dbVisitors = [
-  {
-    visitorname: "Jenny Kim",
-    visitorpass: "Jenny123",
-    id: "090909048454",
-    phoneNumber: "0987654321",
-    appointmentDate: "2023-06-22",
-    carPlate:'XYZ111',
-    Block: "Anggur",
-    HouseUnit:"A-9-1",
-    Hostname: "Albino Rafael",
-    HostNumber:'0114597359'
-  },
-
-];
+let dbVisitors = [{}];
 
 app.post('/userlogin', (req, res) => {
   const data = req.query;
@@ -150,7 +128,7 @@ app.post('/test/register', async (req, res) => {
       const result = await register(
         data.username,
         data.password,
-        data.name,
+        data.Hostname,
         data.email,
         data.hostNumber
       );
@@ -179,7 +157,7 @@ app.post('/host/register', verifyToken,async (req, res) => {
       let result = await register(
         data.username,
         data.password,
-        data.name,
+        data.Hostname,
         data.email,
         data.hostNumber
       );
@@ -237,14 +215,14 @@ app.get('/visitorinfo', verifyToken, async (req, res) => {
     });
     await client.connect();
 
-    if (req.user.role === 'admin' || req.user.role === 'security') {
+    if (req.user.role === 'admin' || req.user.role === 'user') {
       const visitorsCursor = client
         .db("benr3433")
         .collection("visitors")
         .find();
       const visitors = await visitorsCursor.toArray();
       res.send(visitors);
-    } else if (req.user.role === 'user') {
+    } else {
       res.status(401).send('Unauthorized');
     }
   } catch (error) {
@@ -366,10 +344,14 @@ app.patch('/manage-accounts', verifyToken, async (req, res) => {
         return res.status(404).send('User not found');
       }
 
+      // Update the user's contact with the new host number
       await client.db('benr3433').collection('users')
         .updateOne({ username }, { $set: { contact: newhostNumber } });
 
-      res.send(`HostNumber updated successfully for user: ${username}`);
+      // Retrieve the updated user after the update
+      const updatedUser = await client.db('benr3433').collection('users').findOne({ username });
+
+      res.send(`HostNumber updated successfully for user: ${username}. Updated contact: ${updatedUser.contact}`);
     } else {
       res.status(401).send('Unauthorized');
     }
@@ -456,7 +438,7 @@ function register(newusername, newpassword, newname, newemail,newhostNumber) {
     const newUser = {
       username: newusername,
       password: newpassword,
-      name: newname,
+      Hostname: newname,
       email: newemail,
       contact: newhostNumber
     };
@@ -619,7 +601,7 @@ function generateToken(userProfile, role) {
     userProfile,
     role
   };
-  return jwt.sign(payload, 'admin', 
+  return jwt.sign(payload, 'asdfghjkl', 
   { expiresIn: 30 * 60 });
 }
 
@@ -627,7 +609,7 @@ function verifyToken(req, res, next) {
   let header = req.headers.authorization;
   let token = header.split(' ')[1];
 
-  jwt.verify(token, 'admin', function (err, decoded) {
+  jwt.verify(token, 'asdfghjkl', function (err, decoded) {
     if (err) {
       res.send("Invalid Token");
     } else {
