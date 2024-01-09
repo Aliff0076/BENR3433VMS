@@ -564,7 +564,7 @@ async function updateVisitorsCollection() {
 
 function generateToken(username, role) {
   const payload = {
-    username,
+    sub: username,
     role
   };
   return jwt.sign(payload, 'asdfghjkl', { expiresIn: 30 * 60 });
