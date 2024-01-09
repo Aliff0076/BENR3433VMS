@@ -4,7 +4,7 @@ const ejs = require('ejs');
 const dotenv = require('dotenv'); // Add dotenv for environment variables
 dotenv.config(); // Load environment variables from .env file
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 1753;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
@@ -75,8 +75,8 @@ app.post('/userlogin', (req, res) => {
   const userWithRole = userlogin(data.username, data.password);
 
   if (userWithRole) {
-    const { user, role } = userWithRole;
-    const token = generateToken(user, role);
+    const { username, role } = userWithRole;
+    const token = generateToken(username, role);
 
     res.send({
       Status: "Success",
