@@ -28,6 +28,7 @@
  *         required: true
  *         type: string
  *         format: password
+ *         x-mpassword: true  # Custom extension to indicate that the input should be masked
  *     responses:
  *       200:
  *         description: Successful login
