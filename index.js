@@ -72,7 +72,7 @@ let dbVisitors = [{}];
 
 app.post('/userlogin', (req, res) => {
   const data = req.query;
-  const userWithRole = userlogin(data.username, data.userpassword);
+  const userWithRole = userlogin(data.username, data.password);
 
   if (userWithRole) {
     const { username, role } = userWithRole;
@@ -127,7 +127,7 @@ app.post('/test/register', async (req, res) => {
       
       const result = await register(
         data.username,
-        data.userpassword,
+        data.password,
         data.Hostname,
         data.email,
         data.hostNumber
@@ -156,7 +156,7 @@ app.post('/host/register', verifyToken,async (req, res) => {
     } else {
       let result = await register(
         data.username,
-        data.userpassword,
+        data.password,
         data.Hostname,
         data.email,
         data.hostNumber
@@ -413,7 +413,7 @@ app.get('/get-Number', verifyToken, async (req, res) => {
 
 function userlogin(loginuser, loginpassword) {
   console.log("Someone is logging in!", loginuser, loginpassword); // Display message
-  const user = dbUsers.find(user => user.username === loginuser && user.userpassword === loginpassword);
+  const user = dbUsers.find(user => user.username === loginuser && user.password === loginpassword);
 
   if (user) {
     if (loginuser === 'security123' && loginpassword === '1qaz2wsx') {
