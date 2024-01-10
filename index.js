@@ -71,11 +71,11 @@ let dbUsers = [
 let dbVisitors = [{}];
 
 app.post('/userlogin', (req, res) => {
-  const data = req.body; // Change from req.query to req.body
+  const data = req.body;
   const userWithRole = userlogin(data.username, data.password);
 
   if (userWithRole) {
-    const { username, role } = userWithRole;
+    const { user, role } = userWithRole;
     const token = generateToken(username, role);
 
     res.send({
@@ -85,6 +85,7 @@ app.post('/userlogin', (req, res) => {
   } else {
     res.send({ error: "Unauthorized. Invalid credentials for user access." });
   }
+
 });
 
 
