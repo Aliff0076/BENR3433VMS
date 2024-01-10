@@ -18,28 +18,27 @@
  *     description: Logs in a user and generates an authentication token.
  *     parameters:
  *       - name: username
- *         in: formData
+ *         in: body
  *         description: Username
  *         required: true
  *         type: string
  *       - name: password
- *         in: formData
- *         description: password
+ *         in: body
+ *         description: Password
  *         required: true
  *         type: string
  *         format: password
- *         writeOnly: true
  *     responses:
  *       200:
  *         description: Successful login
  *         content:
- *           application/x-www-form-urlencoded:
+ *           application/json:
  *             schema:
  *               type: object
  *               properties:
  *                 Status:
  *                   type: string
- *                   description: Status of the login operation 
+ *                   description: Status of the login operation (e.g., "Success")
  *                 usertoken:
  *                   type: string
  *                   description: Authentication token for the user
