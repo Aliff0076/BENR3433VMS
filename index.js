@@ -6,7 +6,7 @@ dotenv.config(); // Load environment variables from .env file
 const app = express();
 const port = process.env.PORT || 1753;
 
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.set('view engine', 'ejs');
 const jwt = require('jsonwebtoken');
 const swaggerJSDoc = require('swagger-jsdoc');
