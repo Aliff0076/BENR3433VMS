@@ -6,7 +6,7 @@ dotenv.config(); // Load environment variables from .env file
 const app = express();
 const port = process.env.PORT || 1753;
 
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.set('view engine', 'ejs');
 const jwt = require('jsonwebtoken');
 const swaggerJSDoc = require('swagger-jsdoc');
@@ -71,7 +71,7 @@ let dbUsers = [
 let dbVisitors = [{}];
 
 app.post('/userlogin', (req, res) => {
-  const data = req.query;
+  const data = req.body; // Change from req.query to req.body
   const userWithRole = userlogin(data.username, data.password);
 
   if (userWithRole) {
