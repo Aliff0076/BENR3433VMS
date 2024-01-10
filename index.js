@@ -6,7 +6,7 @@ dotenv.config(); // Load environment variables from .env file
 const app = express();
 const port = process.env.PORT || 1753;
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 const jwt = require('jsonwebtoken');
 const swaggerJSDoc = require('swagger-jsdoc');
@@ -75,7 +75,7 @@ app.post('/userlogin', (req, res) => {
   const userWithRole = userlogin(data.username, data.password);
 
   if (userWithRole) {
-    const { user, role } = userWithRole;
+    const { username, role } = userWithRole;
     const token = generateToken(username, role);
 
     res.send({
@@ -85,7 +85,6 @@ app.post('/userlogin', (req, res) => {
   } else {
     res.send({ error: "Unauthorized. Invalid credentials for user access." });
   }
-
 });
 
 
