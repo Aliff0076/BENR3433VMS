@@ -71,19 +71,30 @@ let dbUsers = [
 let dbVisitors = [{}];
 
 app.post('/userlogin', (req, res) => {
-  const data = req.query;
-  const userWithRole = userlogin(data.username, data.password);
+  const { username, password } = req.body;
 
-  if (userWithRole) {
-    const { username, role } = userWithRole;
-    const token = generateToken(username, role);
+  if (!username || !password) {
+    return res.status(400).send({ error: "Bad Request. Username and password are required." });
+  }
 
-    res.send({
-      Status: "Success",
-      usertoken: token,
-    });
-  } else {
-    res.send({ error: "Unauthorized. Invalid credentials for user access." });
+  try {
+    // Replace this with your actual authentication logic
+    const userWithRole = userlogin(username, password);
+
+    if (userWithRole) {
+      const { username, role } = userWithRole;
+      const token = generateToken(username, role);
+
+      res.send({
+        Status: "Success",
+        usertoken: token,
+      });
+    } else {
+      res.status(401).send({ error: "Unauthorized. Invalid credentials for user access." });
+    }
+  } catch (error) {
+    console.error("Authentication error:", error);
+    res.status(500).send({ error: "Internal Server Error" });
   }
 });
 

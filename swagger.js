@@ -12,39 +12,34 @@
  * @swagger
  * /userlogin:
  *   post:
- *     summary: User login and token generation
- *     tags:
- *       - Authentication
- *     description: Logs in a user and generates an authentication token.
- *     parameters:
- *       - name: username
- *         in: query
- *         description: Username
- *         required: true
- *         type: string
- *       - name: password
- *         in: query
- *         description: Password
- *         required: true
- *         type: string
- *         format: password
- *         x-mpassword: true  # Custom extension to indicate that the input should be masked
+ *     summary: User login
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *                 format: password  # This indicates that the value is a password
  *     responses:
  *       200:
  *         description: Successful login
  *         content:
  *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 Status:
- *                   type: string
- *                   description: Status of the login operation (e.g., "Success")
- *                 usertoken:
- *                   type: string
- *                   description: Authentication token for the user
+ *             example:
+ *               Status: Success
+ *               usertoken: "your_token_here"
  *       401:
  *         description: Unauthorized. Invalid credentials for user access.
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Unauthorized. Invalid credentials for user access."
  */
 
 /**
