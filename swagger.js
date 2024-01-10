@@ -24,7 +24,7 @@
  *         type: string
  *       - name: password
  *         in: formData
- *         description: Password
+ *         description: password
  *         required: true
  *         type: string
  *         format: password
