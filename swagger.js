@@ -22,7 +22,7 @@
  *         description: Username
  *         required: true
  *         type: string
- *       - name: password
+ *       - name: userpassword
  *         in: query
  *         description: Password
  *         required: true
