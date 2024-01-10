@@ -126,7 +126,7 @@ app.get('/adminlogin', (req, res) => {
 
 app.post('/test/register', async (req, res) => {
   try {
-    const data = req.query;
+    const data = req.body;
     const username = data.username;
     
     // Check if the username already exists
