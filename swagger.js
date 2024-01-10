@@ -93,7 +93,7 @@
  *           in: query
  *           description: User's phone number
  *           required: true
- *           type: string
+ *           type: number
  *       responses:
  *         '200':
  *           description: User registration successful.
@@ -144,7 +144,7 @@
  *           in: query
  *           description: Host phone number
  *           required: true
- *           type: string
+ *           type: number
  *       responses:
  *         '200':
  *           description: User registration successful.
@@ -225,7 +225,7 @@
  *           in: query
  *           description: Visitor's phone number
  *           required: true
- *           type: string
+ *           type: number
  *         - name: appointmentDate
  *           in: query
  *           description: Visitor's appointment date
@@ -256,7 +256,7 @@
  *           in: query
  *           description : Host number to contact
  *           required: true
- *           type : string
+ *           type : number
  *       responses:
  *         '200':
  *           description: Visitor registration successful.
@@ -341,7 +341,7 @@
  *         required: true
  *         description: New contact number for the user account.
  *         schema:
- *           type: string
+ *           type: number
  *     responses:
  *       200:
  *         description: User password updated successfully.
