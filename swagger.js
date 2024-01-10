@@ -18,12 +18,12 @@
  *     description: Logs in a user and generates an authentication token.
  *     parameters:
  *       - name: username
- *         in: body
+ *         in: query
  *         description: Username
  *         required: true
  *         type: string
  *       - name: password
- *         in: body
+ *         in: query
  *         description: Password
  *         required: true
  *         type: string

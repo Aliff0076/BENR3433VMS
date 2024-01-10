@@ -71,7 +71,7 @@ let dbUsers = [
 let dbVisitors = [{}];
 
 app.post('/userlogin', (req, res) => {
-  const data = req.body;
+  const data = req.query;
   const userWithRole = userlogin(data.username, data.password);
 
   if (userWithRole) {
