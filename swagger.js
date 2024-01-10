@@ -75,6 +75,7 @@
  *           description: User's password
  *           required: true
  *           type: string
+ *           format : password
  *         - name: Hostname
  *           in: query
  *           description: User's name
@@ -126,6 +127,7 @@
  *           description: Host password
  *           required: true
  *           type: string
+ *           format: password
  *         - name: Hostname
  *           in: query
  *           description: Host name
