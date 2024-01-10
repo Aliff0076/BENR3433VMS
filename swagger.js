@@ -32,7 +32,7 @@
  *       200:
  *         description: Successful login
  *         content:
- *           application/json:
+ *           application/x-wwww-form-urlencoded:
  *             schema:
  *               type: object
  *               properties:
