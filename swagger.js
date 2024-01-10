@@ -18,21 +18,22 @@
  *     description: Logs in a user and generates an authentication token.
  *     parameters:
  *       - name: username
- *         in: query
+ *         in: formData
  *         description: Username
  *         required: true
  *         type: string
  *       - name: password
- *         in: query
+ *         in: formData
  *         description: Password
  *         required: true
  *         type: string
  *         format: password
+ *         writeOnly: true
  *     responses:
  *       200:
  *         description: Successful login
  *         content:
- *           application/x-wwww-form-urlencoded:
+ *           application/x-www-form-urlencoded:
  *             schema:
  *               type: object
  *               properties:
